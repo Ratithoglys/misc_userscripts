@@ -2,7 +2,7 @@
 // @name         Ebumna : Cricfree
 // @namespace    http://ebumna.net/
 // @version      0.1
-// @name         Ebumna : Cricfree
+// @description  Ebumna : Cricfree
 // @author       Lénaïc JAOUEN
 // @match        https://cricfree.live/live/*
 // @match        https://cricplay2.xyz/*
