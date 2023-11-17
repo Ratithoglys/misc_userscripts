@@ -9,6 +9,8 @@
 // @match        http://youtube.com/*
 // @match        https://*.youtube.com/*
 // @match        https://youtube.com/*
+// @updateURL    https://github.com/Ratithoglys/misc_userscripts/blob/main/youtubehistory.user.js
+// @downloadURL  https://github.com/Ratithoglys/misc_userscripts/blob/main/youtubehistory.user.js
 // @require      https://openuserjs.org/src/libs/sizzle/GM_config.js
 // @grant        GM_getValue
 // @grant        GM_setValue
