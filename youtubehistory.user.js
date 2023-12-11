@@ -1,10 +1,11 @@
 // ==UserScript==
-// @name         YouTube: Hide Watched Videos - ebumna
+// @name         YouTube: Hide Watched Videos - ebumna - Test
 // @namespace    https://ebumna.net/
-// @version      5.11b
+// @version      6.2
 // @license      MIT
 // @description  Hides watched videos from extension, basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Lénaïc JAOUEN
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
 // @match        http://*.youtube.com/*
 // @match        http://youtube.com/*
 // @match        https://*.youtube.com/*
@@ -14,7 +15,6 @@
 // @require      https://openuserjs.org/src/libs/sizzle/GM_config.js
 // @grant        GM_getValue
 // @grant        GM_setValue
-// @grant        GM.registerMenuCommand
 // ==/UserScript==
 
 // To submit bugs or submit revisions please see visit the repository at:
@@ -27,6 +27,10 @@
 	const DEBUG = false;
 
 	// GM_config setup
+	const title = document.createElement('a');
+	title.textContent = 'YouTube: Hide Watched Videos Settings';
+	title.href = 'https://github.com/EvHaus/youtube-hide-watched';
+	title.target = '_blank';
 	const gmc = new GM_config({
 		events: {
 			save () {
@@ -43,10 +47,8 @@
 			},
 		},
 		id: 'YouTubeHideWatchedVideos',
-		title: 'YouTube: Hide Watched Videos Settings',
+		title,
 	});
-
-	GM.registerMenuCommand('YouTube: Hide Watched Videos Settings', () => gmc.open());
 
 	// Set defaults
 	localStorage.YTHWV_WATCHED = localStorage.YTHWV_WATCHED || 'false';
@@ -89,37 +91,35 @@
 
 .YT-HWV-HIDDEN-ROW-PARENT { padding-bottom: 10px }
 
-.YT-HWV-BUTTON-AREA {
+.YT-HWV-BUTTONS {
 	background: transparent;
-	border: 0;
-	margin: 0 16px;
+	border: 1px solid var(--ytd-searchbox-legacy-border-color);
+    border-radius: 40px;
+    display: flex;
+    gap: 5px;
+	margin: 0 20px;
 }
 
-.YT-HWV-BUTTON-STYLE {
+.YT-HWV-BUTTON {
+	align-items: center;
 	background: transparent;
 	border: 0;
-	color: rgb(96,96,96);
+    border-radius: 40px;
+	color: var(--yt-spec-icon-inactive);
 	cursor: pointer;
+    display: flex;
 	height: 40px;
+    justify-content: center;
 	outline: 0;
 	width: 40px;
 }
 
-.YT-HWV-BUTTON { }
-.YT-HWV-BUTTON-HISTORY { }
-.YT-HWV-BUTTON-SHORTS { }
-.YT-HWV-BUTTON-UPCOMING { }
-
-html[dark]         .YT-HWV-BUTTON-STYLE,  /* "Dark" theme support */
-ytd-masthead[dark] .YT-HWV-BUTTON-STYLE   /* In "Theater mode" the top bar containing the button is always dark regardless of "Dark theme" */
-{
-	color: #EFEFEF;
+.YT-HWV-BUTTON:focus,
+.YT-HWV-BUTTON:hover {
+	background: var(--yt-spec-badge-chip-background);
 }
 
-.YT-HWV-BUTTON-STYLE svg {
-	height: 24px;
-	width: 24px;
-}
+.YT-HWV-BUTTON-DISABLED { color: var(--yt-spec-icon-disabled) }
 
 .YT-HWV-MENU {
 	background: #F8F8F8;
@@ -141,28 +141,45 @@ ytd-masthead[dark] .YT-HWV-BUTTON-STYLE   /* In "Theater mode" the top bar conta
 .YT-HWV-MENUBUTTON-ON span { transform: rotate(180deg) }
 `);
 
-	/* eslint-disable max-len */
-	const icons = {
-		dimmed: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><g fill="currentColor" fill-opacity="0.3"><path d="M24 9C14 9 5.46 15.22 2 24c3.46 8.78 12 15 22 15 10.01 0 18.54-6.22 22-15-3.46-8.78-11.99-15-22-15zm0 25c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10-4.48 10-10 10zm0-16c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"/></g></svg>',
-		hidden: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><g fill="currentColor" fill-opacity="0.3"><path d="M24 14c5.52 0 10 4.48 10 10 0 1.29-.26 2.52-.71 3.65l5.85 5.85c3.02-2.52 5.4-5.78 6.87-9.5-3.47-8.78-12-15-22.01-15-2.8 0-5.48.5-7.97 1.4l4.32 4.31c1.13-.44 2.36-.71 3.65-.71zM4 8.55l4.56 4.56.91.91C6.17 16.6 3.56 20.03 2 24c3.46 8.78 12 15 22 15 3.1 0 6.06-.6 8.77-1.69l.85.85L39.45 44 42 41.46 6.55 6 4 8.55zM15.06 19.6l3.09 3.09c-.09.43-.15.86-.15 1.31 0 3.31 2.69 6 6 6 .45 0 .88-.06 1.3-.15l3.09 3.09C27.06 33.6 25.58 34 24 34c-5.52 0-10-4.48-10-10 0-1.58.4-3.06 1.06-4.4zm8.61-1.57l6.3 6.3L30 24c0-3.31-2.69-6-6-6l-.33.03z"/></g></svg>',
-		normal: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><g fill="currentColor"><path d="M24 9C14 9 5.46 15.22 2 24c3.46 8.78 12 15 22 15 10.01 0 18.54-6.22 22-15-3.46-8.78-11.99-15-22-15zm0 25c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10-4.48 10-10 10zm0-16c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"/></g></svg>',
-	};
-	const icons_history = {
-		dimmed: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><g fill="yellow" fill-opacity="0.3"><path d="M24 9C14 9 5.46 15.22 2 24c3.46 8.78 12 15 22 15 10.01 0 18.54-6.22 22-15-3.46-8.78-11.99-15-22-15zm0 25c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10-4.48 10-10 10zm0-16c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"/></g></svg>',
-		hidden: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><g fill="yellow" fill-opacity="0.3"><path d="M24 14c5.52 0 10 4.48 10 10 0 1.29-.26 2.52-.71 3.65l5.85 5.85c3.02-2.52 5.4-5.78 6.87-9.5-3.47-8.78-12-15-22.01-15-2.8 0-5.48.5-7.97 1.4l4.32 4.31c1.13-.44 2.36-.71 3.65-.71zM4 8.55l4.56 4.56.91.91C6.17 16.6 3.56 20.03 2 24c3.46 8.78 12 15 22 15 3.1 0 6.06-.6 8.77-1.69l.85.85L39.45 44 42 41.46 6.55 6 4 8.55zM15.06 19.6l3.09 3.09c-.09.43-.15.86-.15 1.31 0 3.31 2.69 6 6 6 .45 0 .88-.06 1.3-.15l3.09 3.09C27.06 33.6 25.58 34 24 34c-5.52 0-10-4.48-10-10 0-1.58.4-3.06 1.06-4.4zm8.61-1.57l6.3 6.3L30 24c0-3.31-2.69-6-6-6l-.33.03z"/></g></svg>',
-		normal: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><g fill="yellow"><path d="M24 9C14 9 5.46 15.22 2 24c3.46 8.78 12 15 22 15 10.01 0 18.54-6.22 22-15-3.46-8.78-11.99-15-22-15zm0 25c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10-4.48 10-10 10zm0-16c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"/></g></svg>',
-	};
-	const icons_shorts = {
-		dimmed: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><g fill="currentColor" fill-opacity="0.3"><path transform="scale(3.0)" d="M10.65,1C10.65,1,10.65,1,10.65,1c-0.37,0-0.75,0.1-1.09,0.31L4.25,4.46C3.44,4.93,2.96,5.89,3,6.9  C3.05,7.9,3.58,8.77,4.39,9.18c0.02,0.01,0.75,0.35,0.75,0.35l-0.9,0.53c-1.14,0.68-1.58,2.27-0.98,3.55C3.69,14.49,4.5,15,5.35,15  c0.37,0,0.74-0.1,1.09-0.31l5.31-3.15c0.8-0.48,1.29-1.43,1.24-2.45c-0.04-0.99-0.58-1.87-1.39-2.27c-0.02-0.01-0.75-0.35-0.75-0.35  l0.9-0.53c1.14-0.68,1.58-2.27,0.97-3.55C12.31,1.51,11.49,1,10.65,1L10.65,1z" /></g></svg>',
-		hidden: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><clipPath id="slashGap"><rect fill="#007fff" stroke-width=" 0px" x="26.89096" y="1.80215" width="16.74642" height="30.69609" transform="rotate(-30.75, 35.2642, 17.1502)"/><rect fill="#007fff" stroke-width=" 0px" x="4.61312" y="15.41155" width="16.5074" height="30.84016" transform="rotate(-30.75, 12.8668, 30.8316)"/></clipPath><g fill-opacity="0.3" fill="currentColor"><g id="shortIcon" clip-path="url(#slashGap)"><path transform="translate(3.125, 3.125) scale(3)" d="m9.61501,-0.04167c0,0 0,0 0,0c-0.37,0 -0.75,0.1 -1.09,0.31l-5.31,3.15c-0.81,0.47 -1.29,1.43 -1.25,2.44c0.05,1 0.58,1.87 1.39,2.28c0.02,0.01 0.75,0.35 0.75,0.35l-0.9,0.53c-1.14,0.68 -1.58,2.27 -0.98,3.55c0.43,0.88 1.24,1.39 2.09,1.39c0.37,0 0.74,-0.1 1.09,-0.31l5.31,-3.15c0.8,-0.48 1.29,-1.43 1.24,-2.45c-0.04,-0.99 -0.58,-1.87 -1.39,-2.27c-0.02,-0.01 -0.75,-0.35 -0.75,-0.35l0.9,-0.53c1.14,-0.68 1.58,-2.27 0.97,-3.55c-0.41,-0.88 -1.23,-1.39 -2.07,-1.39l0,0z"/></g><rect id="slash" stroke-width="0px" x="19.29907" y="1.00388" width="4.73147" height="47.45023" transform="rotate(-30.75, 21.6648, 24.729)"/></g></svg>',
-		normal: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><g fill="currentColor"><path transform="scale(3.0)" d="M10.65,1C10.65,1,10.65,1,10.65,1c-0.37,0-0.75,0.1-1.09,0.31L4.25,4.46C3.44,4.93,2.96,5.89,3,6.9  C3.05,7.9,3.58,8.77,4.39,9.18c0.02,0.01,0.75,0.35,0.75,0.35l-0.9,0.53c-1.14,0.68-1.58,2.27-0.98,3.55C3.69,14.49,4.5,15,5.35,15  c0.37,0,0.74-0.1,1.09-0.31l5.31-3.15c0.8-0.48,1.29-1.43,1.24-2.45c-0.04-0.99-0.58-1.87-1.39-2.27c-0.02-0.01-0.75-0.35-0.75-0.35  l0.9-0.53c1.14-0.68,1.58-2.27,0.97-3.55C12.31,1.51,11.49,1,10.65,1L10.65,1z" /></g></svg>',
-	};
-	const icons_upcoming = {
-		dimmed: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><path d="M40.513 4.227h-8.884c-.444 0-.803.401-.803.887v19.78c0 .036-.035 2.781-.14 4.393-.564 3.964-2.549 5.724-6.42 5.724s-5.857-1.76-6.413-5.632c-.106-1.704-.141-4.442-.141-4.463V5.114c0-.493-.366-.887-.803-.887H8.02c-.444 0-.803.401-.803.887v19.809c0 .127 0 3.111.387 6.666.591 4.083 2.527 7.814 4.182 9.694 1.07 1.225 5.153 5.223 12.48 5.223s11.405-3.991 12.489-5.223c1.647-1.88 3.59-5.604 4.181-9.722.387-3.527.387-6.511.387-6.638V5.113a.81.894 0 0 0-.81-.886z" fill="teal" fill-opacity=".3"/></svg>',
-		hidden: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><clipPath id="a"><path fill="#007fff" stroke-width="0" d="M20.22 8.24 34.613-.32l15.695 26.38-14.391 8.562zM-2.11 21.8l14.186-8.44 15.768 26.504-14.186 8.44z"/></clipPath><g fill-opacity=".3" fill="teal"><g clip-path="url(#a)"><path d="M40.513 4.227h-8.884c-.444 0-.803.401-.803.887v19.78c0 .036-.035 2.781-.14 4.393-.564 3.964-2.549 5.724-6.42 5.724s-5.857-1.76-6.413-5.632c-.106-1.704-.141-4.442-.141-4.463V5.114c0-.493-.366-.887-.803-.887H8.02c-.444 0-.803.401-.803.887v19.809c0 .127 0 3.111.387 6.666.591 4.083 2.527 7.814 4.182 9.694 1.07 1.225 5.153 5.223 12.48 5.223s11.405-3.991 12.489-5.223c1.647-1.88 3.59-5.604 4.181-9.722.387-3.527.387-6.511.387-6.638V5.113a.81.894 0 0 0-.81-.886z"/></g><path d="m7.501 5.55 4.066-2.42 24.26 40.78-4.065 2.418z"/></g></svg>',
-		normal: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><path d="M40.513 4.227h-8.884c-.444 0-.803.401-.803.887v19.78c0 .036-.035 2.781-.14 4.393-.564 3.964-2.549 5.724-6.42 5.724s-5.857-1.76-6.413-5.632c-.106-1.704-.141-4.442-.141-4.463V5.114c0-.493-.366-.887-.803-.887H8.02c-.444 0-.803.401-.803.887v19.809c0 .127 0 3.111.387 6.666.591 4.083 2.527 7.814 4.182 9.694 1.07 1.225 5.153 5.223 12.48 5.223s11.405-3.991 12.489-5.223c1.647-1.88 3.59-5.604 4.181-9.722.387-3.527.387-6.511.387-6.638V5.113a.81.894 0 0 0-.81-.886z" fill="teal""/></svg>',
-	};
-	/* eslint-enable max-len */
+	const BUTTONS = [{
+		/* eslint-disable max-len */
+		icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><path fill="currentColor" d="M24 9C14 9 5.46 15.22 2 24c3.46 8.78 12 15 22 15 10.01 0 18.54-6.22 22-15-3.46-8.78-11.99-15-22-15zm0 25c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10-4.48 10-10 10zm0-16c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"/></svg>',
+		iconHidden: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><path fill="currentColor" d="M24 14c5.52 0 10 4.48 10 10 0 1.29-.26 2.52-.71 3.65l5.85 5.85c3.02-2.52 5.4-5.78 6.87-9.5-3.47-8.78-12-15-22.01-15-2.8 0-5.48.5-7.97 1.4l4.32 4.31c1.13-.44 2.36-.71 3.65-.71zM4 8.55l4.56 4.56.91.91C6.17 16.6 3.56 20.03 2 24c3.46 8.78 12 15 22 15 3.1 0 6.06-.6 8.77-1.69l.85.85L39.45 44 42 41.46 6.55 6 4 8.55zM15.06 19.6l3.09 3.09c-.09.43-.15.86-.15 1.31 0 3.31 2.69 6 6 6 .45 0 .88-.06 1.3-.15l3.09 3.09C27.06 33.6 25.58 34 24 34c-5.52 0-10-4.48-10-10 0-1.58.4-3.06 1.06-4.4zm8.61-1.57 6.3 6.3L30 24c0-3.31-2.69-6-6-6l-.33.03z"/></svg>',
+		/* eslint-enable max-len */
+		name: 'Toggle Watched Videos',
+		stateKey: 'YTHWV_STATE',
+		type: 'toggle',
+	}, {
+		/* eslint-disable max-len */
+		icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><path fill="currentColor" d="M24 9C14 9 5.46 15.22 2 24c3.46 8.78 12 15 22 15 10.01 0 18.54-6.22 22-15-3.46-8.78-11.99-15-22-15zm0 25c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10-4.48 10-10 10zm0-16c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"/></svg>',
+		iconHidden: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><path fill="currentColor" d="M24 14c5.52 0 10 4.48 10 10 0 1.29-.26 2.52-.71 3.65l5.85 5.85c3.02-2.52 5.4-5.78 6.87-9.5-3.47-8.78-12-15-22.01-15-2.8 0-5.48.5-7.97 1.4l4.32 4.31c1.13-.44 2.36-.71 3.65-.71zM4 8.55l4.56 4.56.91.91C6.17 16.6 3.56 20.03 2 24c3.46 8.78 12 15 22 15 3.1 0 6.06-.6 8.77-1.69l.85.85L39.45 44 42 41.46 6.55 6 4 8.55zM15.06 19.6l3.09 3.09c-.09.43-.15.86-.15 1.31 0 3.31 2.69 6 6 6 .45 0 .88-.06 1.3-.15l3.09 3.09C27.06 33.6 25.58 34 24 34c-5.52 0-10-4.48-10-10 0-1.58.4-3.06 1.06-4.4zm8.61-1.57 6.3 6.3L30 24c0-3.31-2.69-6-6-6l-.33.03z"/></svg>',
+		/* eslint-enable max-len */
+		name: 'Toggle History Videos',
+		stateKey: 'YTHWV_STATE_HISTORY',
+		type: 'toggle',
+	}, {
+		/* eslint-disable max-len */
+		icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><path fill="currentColor" d="M31.95 3c-1.11 0-2.25.3-3.27.93l-15.93 9.45C10.32 14.79 8.88 17.67 9 20.7c.15 3 1.74 5.61 4.17 6.84.06.03 2.25 1.05 2.25 1.05l-2.7 1.59c-3.42 2.04-4.74 6.81-2.94 10.65C11.07 43.47 13.5 45 16.05 45c1.11 0 2.22-.3 3.27-.93l15.93-9.45c2.4-1.44 3.87-4.29 3.72-7.35-.12-2.97-1.74-5.61-4.17-6.81-.06-.03-2.25-1.05-2.25-1.05l2.7-1.59c3.42-2.04 4.74-6.81 2.91-10.65C36.93 4.53 34.47 3 31.95 3z"/></svg>',
+		iconHidden: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><g fill="currentColor"><g clip-path="url(#slashGap)"><path d="M31.97 3c-1.11 0-2.25.3-3.27.93l-15.93 9.45c-2.43 1.41-3.87 4.29-3.75 7.32.15 3 1.74 5.61 4.17 6.84.06.03 2.25 1.05 2.25 1.05l-2.7 1.59C9.32 32.22 8 36.99 9.8 40.83c1.29 2.64 3.72 4.17 6.27 4.17 1.11 0 2.22-.3 3.27-.93l15.93-9.45c2.4-1.44 3.87-4.29 3.72-7.35-.12-2.97-1.74-5.61-4.17-6.81-.06-.03-2.25-1.05-2.25-1.05l2.7-1.59c3.42-2.04 4.74-6.81 2.91-10.65C36.95 4.53 34.49 3 31.97 3z"/></g><path d="m7.501 5.55 4.066-2.42 24.26 40.78-4.065 2.418z"/></g></svg>',
+		/* eslint-enable max-len */
+		name: 'Toggle Shorts',
+		stateKey: 'YTHWV_STATE_SHORTS',
+		type: 'toggle',
+	}, {
+		/* eslint-disable max-len */
+		icon: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><path fill="currentColor" d="M40.513 4.227h-8.884c-.444 0-.803.401-.803.887v19.78c0 .036-.035 2.781-.14 4.393-.564 3.964-2.549 5.724-6.42 5.724s-5.857-1.76-6.413-5.632c-.106-1.704-.141-4.442-.141-4.463V5.114c0-.493-.366-.887-.803-.887H8.02c-.444 0-.803.401-.803.887v19.809c0 .127 0 3.111.387 6.666.591 4.083 2.527 7.814 4.182 9.694 1.07 1.225 5.153 5.223 12.48 5.223s11.405-3.991 12.489-5.223c1.647-1.88 3.59-5.604 4.181-9.722.387-3.527.387-6.511.387-6.638V5.113a.81.894 0 0 0-.81-.886z"/></svg>',
+		iconHidden: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><clipPath id="a"><path fill="#007fff" stroke-width="0" d="M20.22 8.24 34.613-.32l15.695 26.38-14.391 8.562zM-2.11 21.8l14.186-8.44 15.768 26.504-14.186 8.44z"/></clipPath><g fill-opacity=".3" fill="currentColor"><g clip-path="url(#a)"><path d="M40.513 4.227h-8.884c-.444 0-.803.401-.803.887v19.78c0 .036-.035 2.781-.14 4.393-.564 3.964-2.549 5.724-6.42 5.724s-5.857-1.76-6.413-5.632c-.106-1.704-.141-4.442-.141-4.463V5.114c0-.493-.366-.887-.803-.887H8.02c-.444 0-.803.401-.803.887v19.809c0 .127 0 3.111.387 6.666.591 4.083 2.527 7.814 4.182 9.694 1.07 1.225 5.153 5.223 12.48 5.223s11.405-3.991 12.489-5.223c1.647-1.88 3.59-5.604 4.181-9.722.387-3.527.387-6.511.387-6.638V5.113a.81.894 0 0 0-.81-.886z"/></g><path d="m7.501 5.55 4.066-2.42 24.26 40.78-4.065 2.418z"/></g></svg>',
+		/* eslint-enable max-len */
+		name: 'Toggle Upcoming',
+		stateKey: 'YTHWV_STATE_UPCOMING',
+		type: 'toggle',
+	}, {
+		/* eslint-disable max-len */
+		icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path fill="currentColor" d="M12 9.5a2.5 2.5 0 0 1 0 5 2.5 2.5 0 0 1 0-5m0-1c-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5 3.5-1.57 3.5-3.5-1.57-3.5-3.5-3.5zM13.22 3l.55 2.2.13.51.5.18c.61.23 1.19.56 1.72.98l.4.32.5-.14 2.17-.62 1.22 2.11-1.63 1.59-.37.36.08.51c.05.32.08.64.08.98s-.03.66-.08.98l-.08.51.37.36 1.63 1.59-1.22 2.11-2.17-.62-.5-.14-.4.32c-.53.43-1.11.76-1.72.98l-.5.18-.13.51-.55 2.24h-2.44l-.55-2.2-.13-.51-.5-.18c-.6-.23-1.18-.56-1.72-.99l-.4-.32-.5.14-2.17.62-1.21-2.12 1.63-1.59.37-.36-.08-.51c-.05-.32-.08-.65-.08-.98s.03-.66.08-.98l.08-.51-.37-.36L3.6 8.56l1.22-2.11 2.17.62.5.14.4-.32c.53-.44 1.11-.77 1.72-.99l.5-.18.13-.51.54-2.21h2.44M14 2h-4l-.74 2.96c-.73.27-1.4.66-2 1.14l-2.92-.83-2 3.46 2.19 2.13c-.06.37-.09.75-.09 1.14s.03.77.09 1.14l-2.19 2.13 2 3.46 2.92-.83c.6.48 1.27.87 2 1.14L10 22h4l.74-2.96c.73-.27 1.4-.66 2-1.14l2.92.83 2-3.46-2.19-2.13c.06-.37.09-.75.09-1.14s-.03-.77-.09-1.14l2.19-2.13-2-3.46-2.92.83c-.6-.48-1.27-.87-2-1.14L14 2z"/></svg>',
+		/* eslint-enable max-len */
+		name: 'Settings',
+		type: 'settings',
+	}];
 
 	// ===========================================================
 
@@ -211,18 +228,6 @@ ytd-masthead[dark] .YT-HWV-BUTTON-STYLE   /* In "Theater mode" the top bar conta
 
 	// ===========================================================
 
-	const findUpcomingElements = function () {
-		const upcoming = document.querySelectorAll('[overlay-style=UPCOMING]');
-
-		logDebug(
-			`Found ${upcoming.length} upcoming elements in history `
-		);
-
-		return upcoming;
-	};
-
-	// ===========================================================
-
 	const findShortsContainers = function () {
 		const shortsContainers = [
 			// Subscriptions Page (List View)
@@ -253,15 +258,21 @@ ytd-masthead[dark] .YT-HWV-BUTTON-STYLE   /* In "Theater mode" the top bar conta
 
 	// ===========================================================
 
-	const findButtonAreaTarget = function () {
-		// Button will be injected into the main header menu
-		return document.querySelector('#container #end #buttons');
+	const findUpcomingElements = function () {
+		const upcoming = document.querySelectorAll('[overlay-style=UPCOMING]');
+
+		logDebug(
+			`Found ${upcoming.length} upcoming elements in history `
+		);
+
+		return upcoming;
 	};
 
 	// ===========================================================
 
-	const isButtonAlreadyThere = function () {
-		return document.querySelectorAll('.YT-HWV-BUTTON').length > 0;
+	const findButtonAreaTarget = function () {
+		// Button will be injected into the main header menu
+		return document.querySelector('#container #end #buttons');
 	};
 
 	// ===========================================================
@@ -313,14 +324,14 @@ ytd-masthead[dark] .YT-HWV-BUTTON-STYLE   /* In "Theater mode" the top bar conta
 					// Grid item
 					item.closest('.ytd-grid-renderer') ||
 					item.closest('.ytd-item-section-renderer') ||
-                    item.closest('.ytd-rich-grid-row') ||
+					item.closest('.ytd-rich-grid-row') ||
 					// List item
 					item.closest('#grid-container')
 				);
 
 				// If we're hiding the .ytd-item-section-renderer element, we need to give it
 				// some extra spacing otherwise we'll get stuck in infinite page loading
-				if (watchedItem && watchedItem.classList.contains('ytd-item-section-renderer')) {
+				if (watchedItem?.classList.contains('ytd-item-section-renderer')) {
 					watchedItem.closest('ytd-item-section-renderer').classList.add('YT-HWV-HIDDEN-ROW-PARENT');
 				}
 			} else if (section === 'playlist') {
@@ -335,8 +346,7 @@ ytd-masthead[dark] .YT-HWV-BUTTON-STYLE   /* In "Theater mode" the top bar conta
 				// let's also ignore it as in case of shuffle enabled
 				// we could accidentially hide the item which gonna play next.
 				if (
-					watchedItem &&
-					watchedItem.closest('ytd-compact-autoplay-renderer')
+					watchedItem?.closest('ytd-compact-autoplay-renderer')
 				) {
 					watchedItem = null;
 				}
@@ -462,6 +472,28 @@ ytd-masthead[dark] .YT-HWV-BUTTON-STYLE   /* In "Theater mode" the top bar conta
 
 	// ===========================================================
 
+	const updateClassOnShortsItems = function () {
+		const section = determineYoutubeSection();
+
+		document.querySelectorAll('.YT-HWV-SHORTS-DIMMED').forEach((el) => el.classList.remove('YT-HWV-SHORTS-DIMMED'));
+		document.querySelectorAll('.YT-HWV-SHORTS-HIDDEN').forEach((el) => el.classList.remove('YT-HWV-SHORTS-HIDDEN'));
+
+		const state = localStorage[`YTHWV_STATE_SHORTS_${section}`];
+
+		const shortsContainers = findShortsContainers();
+
+		shortsContainers.forEach((item) => {
+			// Add current class
+			if (state === 'dimmed') {
+				item.classList.add('YT-HWV-SHORTS-DIMMED');
+			} else if (state === 'hidden') {
+				item.classList.add('YT-HWV-SHORTS-HIDDEN');
+			}
+		});
+	};
+
+	// ===========================================================
+
 	const updateClassOnUpcomingItems = function () {
 		// Remove existing classes
 		document.querySelectorAll('.YT-HWV-UPCOMING-DIMMED').forEach((el) => el.classList.remove('YT-HWV-UPCOMING-DIMMED'));
@@ -550,28 +582,75 @@ ytd-masthead[dark] .YT-HWV-BUTTON-STYLE   /* In "Theater mode" the top bar conta
 
 	// ===========================================================
 
-	const updateClassOnShortsItems = function () {
-		const section = determineYoutubeSection();
+		// Find button area target
+		const target = findButtonAreaTarget();
+		if (!target) return;
+	const renderButtons = function () {
 
-		document.querySelectorAll('.YT-HWV-SHORTS-DIMMED').forEach((el) => el.classList.remove('YT-HWV-SHORTS-DIMMED'));
-		document.querySelectorAll('.YT-HWV-SHORTS-HIDDEN').forEach((el) => el.classList.remove('YT-HWV-SHORTS-HIDDEN'));
+		// Did we already render the buttons?
+		const existingButtons = document.querySelector('.YT-HWV-BUTTONS');
 
-		const state = localStorage[`YTHWV_STATE_SHORTS_${section}`];
+		// Generate buttons area DOM
+		const buttonArea = document.createElement('div');
+		buttonArea.classList.add('YT-HWV-BUTTONS');
 
-		const shortsContainers = findShortsContainers();
+		// Render buttons
+		BUTTONS.forEach(({icon, iconHidden, name, stateKey, type}) => {
+			// For toggle buttons, determine where in localStorage they track state
+			const section = determineYoutubeSection();
+			const storageKey = [stateKey, section].join('_');
+			const toggleButtonState = localStorage.getItem(storageKey) || 'normal';
 
-		shortsContainers.forEach((item) => {
-			// Add current class
-			if (state === 'dimmed') {
-				item.classList.add('YT-HWV-SHORTS-DIMMED');
-			} else if (state === 'hidden') {
-				item.classList.add('YT-HWV-SHORTS-HIDDEN');
+			// Generate button DOM
+			const button = document.createElement('button');
+			button.title = type === 'toggle' ? `${name} : currently "${toggleButtonState}" for section "${section}"` : `${name}`;
+			button.classList.add('YT-HWV-BUTTON');
+			if (toggleButtonState !== 'normal') button.classList.add('YT-HWV-BUTTON-DISABLED');
+			button.innerHTML = toggleButtonState === 'hidden' ? iconHidden : icon;
+			buttonArea.appendChild(button);
+
+			// Attach events for toggle buttons
+			switch (type) {
+				case 'toggle':
+					button.addEventListener('click', () => {
+						logDebug(`Button ${name} clicked. State: ${toggleButtonState}`);
+
+						let newState = 'dimmed';
+						if (toggleButtonState === 'dimmed') {
+							newState = 'hidden';
+						} else if (toggleButtonState === 'hidden') {
+							newState = 'normal';
+						}
+
+						localStorage.setItem(storageKey, newState);
+
+						updateClassOnWatchedItems();
+						updateClassOnHistoryItems();
+						updateClassOnShortsItems();
+						updateClassOnUpcomingItems();
+						renderButtons();
+					});
+					break;
+				case 'settings':
+					button.addEventListener('click', () => {
+						gmc.open();
+						renderButtons();
+					});
+					break;
 			}
 		});
+
+		// Insert buttons into DOM
+		if (existingButtons) {
+			target.parentNode.replaceChild(buttonArea, existingButtons);
+			logDebug('Re-rendered menu buttons');
+		} else {
+			target.parentNode.insertBefore(buttonArea, target);
+			logDebug('Rendered menu buttons');
+		}
 	};
 
-	// ===========================================================
-
+/*
 	const addButtons = function () {
 		if (isButtonAlreadyThere()) {
 			setButtonState();
@@ -740,6 +819,7 @@ ytd-masthead[dark] .YT-HWV-BUTTON-STYLE   /* In "Theater mode" the top bar conta
 		button.innerHTML = icons_shorts[state];
 		button.setAttribute('title', `Toggle Shorts (currently "${state}" for "${section}" section)`);
 	};
+*/
 
 	const run = debounce((mutations) => {
 
@@ -757,10 +837,10 @@ ytd-masthead[dark] .YT-HWV-BUTTON-STYLE   /* In "Theater mode" the top bar conta
 
 		logDebug('Running check for watched videos, and shorts');
 		updateClassOnWatchedItems();
-        updateClassOnHistoryItems();
-		updateClassOnUpcomingItems();
+		updateClassOnHistoryItems();
 		updateClassOnShortsItems();
-		addButtons();
+		updateClassOnUpcomingItems();
+		renderButtons();
 	}, 250);
 
 	// ===========================================================
