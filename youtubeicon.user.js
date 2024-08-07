@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube custom favicon
 // @namespace    https://ebumna.net/
-// @version      0.1
+// @version      0.2
 // @license      MIT
 // @description  Hides watched videos from extension, basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Lénaïc JAOUEN
@@ -10,8 +10,8 @@
 // @match        http://youtube.com/*
 // @match        https://*.youtube.com/*
 // @match        https://youtube.com/*
-// @updateURL    https://github.com/Ratithoglys/misc_userscripts/blob/main/youtubeicon.user.js
-// @downloadURL  https://github.com/Ratithoglys/misc_userscripts/blob/main/youtubeicon.user.js
+// @updateURL    https://github.com/Ratithoglys/misc_userscripts/raw/main/youtubeicon.user.js
+// @downloadURL  https://github.com/Ratithoglys/misc_userscripts/raw/main/youtubeicon.user.js
 // ==/UserScript==
 
 (function() {
