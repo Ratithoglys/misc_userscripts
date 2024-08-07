@@ -14,8 +14,8 @@
 // @require      https://openuserjs.org/src/libs/sizzle/GM_config.js
 // @grant        GM_getValue
 // @grant        GM_setValue
-// @updateURL    https://github.com/Ratithoglys/misc_userscripts/blob/main/youtubehistory.user.js
-// @downloadURL  https://github.com/Ratithoglys/misc_userscripts/blob/main/youtubehistory.user.js
+// @updateURL    https://github.com/Ratithoglys/misc_userscripts/raw/main/youtubehistory.user.js
+// @downloadURL  https://github.com/Ratithoglys/misc_userscripts/raw/main/youtubehistory.user.js
 // ==/UserScript==
 
 // To submit bugs or submit revisions please see visit the repository at:
