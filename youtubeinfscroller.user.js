@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Infinite Scroll Manager
 // @namespace    http://ebumna.net/
-// @version      0.1
+// @version      0.2
 // @description  Contrôle discret du défilement infini avec emojis et texte adaptés
 // @author       Lénaïc JAOUEN
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
@@ -70,8 +70,8 @@
 
     function updateButtonAppearance(btn) {
         btn.innerHTML = isEnabled
-            ? '<span>▶️</span> Scrolling'
-            : '<span>⏸️</span> Pause';
+            ? '<span style="background-color: white; color: black; padding: 2px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;">▶️</span> Scrolling'
+            : '<span style="background-color: white; color: black; padding: 2px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;">⏸️</span> Pause';
         btn.style.background = isEnabled ? '#0F9D58' : '#CC0000';
     }
 
@@ -100,7 +100,10 @@
             item.style.display = '';
             const parent = item.closest('ytd-item-section-renderer');
             if (parent) {
-                parent.dispatchEvent(new CustomEvent('yt-action', { bubbles: true }));
+                // Vérifiez si parent.actionName existe avant de déclencher l'événement
+                if (parent.actionName) {
+                    parent.dispatchEvent(new CustomEvent('yt-action', { bubbles: true }));
+                }
             }
         });
     }
