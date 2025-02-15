@@ -1,9 +1,12 @@
 // ==UserScript==
-// @name         YouTube: Hide Watched Videos - ebumna - Test
+// @name         YouTube: Hide Watched Videos extended
 // @namespace    https://ebumna.net/
-// @version      6.5
+// @version      6.7
 // @license      MIT
-// @description  Hides watched videos from extension, basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
+// @description  Hides watched videos from extension. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
+// @author       Ev Haus
+// @author       netjeff
+// @author       actionless
 // @author       Lénaïc JAOUEN
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
 // @match        http://*.youtube.com/*
@@ -14,8 +17,8 @@
 // @require      https://openuserjs.org/src/libs/sizzle/GM_config.js
 // @grant        GM_getValue
 // @grant        GM_setValue
-// @updateURL    https://github.com/Ratithoglys/misc_userscripts/raw/main/youtubehistory.user.js
-// @downloadURL  https://github.com/Ratithoglys/misc_userscripts/raw/main/youtubehistory.user.js
+// @updateURL    https://github.com/Ratithoglys/misc_userscripts/blob/main/youtubehistory.user.js
+// @downloadURL  https://github.com/Ratithoglys/misc_userscripts/blob/main/youtubehistory.user.js
 // ==/UserScript==
 
 // To submit bugs or submit revisions please see visit the repository at:
@@ -23,7 +26,7 @@
 // You can open new issues at:
 // https://github.com/EvHaus/youtube-hide-watched/issues
 
-(function (_undefined) {
+((_undefined) => {
 	// Enable for debugging
 	const DEBUG = false;
 
@@ -63,13 +66,12 @@
 	localStorage.YTHWV_WATCHED = localStorage.YTHWV_WATCHED || 'false';
 
 	const logDebug = (...msgs) => {
-		// biome-ignore lint/suspicious/noConsoleLog: This is a debug log
-		if (DEBUG) console.log('[YT-HWV]', msgs);
+		if (DEBUG) console.debug('[YT-HWV]', msgs);
 	};
 
 	// GreaseMonkey no longer supports GM_addStyle. So we have to define
 	// our own polyfill here
-	const addStyle = function (aCss) {
+	const addStyle = (aCss) => {
 		const head = document.getElementsByTagName('head')[0];
 		if (head) {
 			const style = document.createElement('style');
@@ -208,9 +210,13 @@
 
 	// ===========================================================
 
-	const findWatchedElements = function () {
+	const findWatchedElements = () => {
 		const watched = document.querySelectorAll(
-			'.ytd-thumbnail-overlay-resume-playback-renderer',
+			[
+				'.ytd-thumbnail-overlay-resume-playback-renderer',
+				// 2025-02-01 Update
+				'.ytThumbnailOverlayProgressBarHostWatchedProgressBarSegmentModern',
+			].join(','),
 		);
 
 		const withThreshold = Array.from(watched).filter((bar) => {
@@ -231,7 +237,7 @@
 
 	// ===========================================================
 
-	const findHistoryElements = function () {
+	const findHistoryElements = () => {
 		const history = document.querySelectorAll(
 			'.youwatch-mark'
 		);
@@ -245,8 +251,10 @@
 
 	// ===========================================================
 
-	const findShortsContainers = function () {
+	const findShortsContainers = () => {
 		const shortsContainers = [
+			// All pages (2024-09 update)
+			document.querySelectorAll('[is-shorts]'),
 			// Subscriptions Page (List View)
 			document.querySelectorAll(
 				'ytd-reel-shelf-renderer ytd-reel-item-renderer',
@@ -287,7 +295,7 @@
 
 	// ===========================================================
 
-	const findUpcomingElements = function () {
+	const findUpcomingElements = () => {
 		const upcoming = document.querySelectorAll(
 			'[overlay-style=UPCOMING]'
 		);
@@ -301,14 +309,14 @@
 
 	// ===========================================================
 
-	const findButtonAreaTarget = function () {
+	const findButtonAreaTarget = () => {
 		// Button will be injected into the main header menu
 		return document.querySelector('#container #end #buttons');
 	};
 
 	// ===========================================================
 
-	const determineYoutubeSection = function () {
+	const determineYoutubeSection = () => {
 		const { href } = window.location;
 
 		let youtubeSection = 'misc';
@@ -331,7 +339,7 @@
 
 	// ===========================================================
 
-	const updateClassOnWatchedItems = function () {
+	const updateClassOnWatchedItems = () => {
 		// Remove existing classes
 		document
 			.querySelectorAll('.YT-HWV-WATCHED-DIMMED')
@@ -422,7 +430,7 @@
 
 	// ===========================================================
 
-	const updateClassOnHistoryItems = function () {
+	const updateClassOnHistoryItems = () => {
 
 		// Remove existing classes
 		document
@@ -516,7 +524,7 @@
 
 	// ===========================================================
 
-	const updateClassOnShortsItems = function () {
+	const updateClassOnShortsItems = () => {
 		const section = determineYoutubeSection();
 
 		document
@@ -542,7 +550,7 @@
 
 	// ===========================================================
 
-	const updateClassOnUpcomingItems = function () {
+	const updateClassOnUpcomingItems = () => {
 		// Remove existing classes
 		document
 			.querySelectorAll('.YT-HWV-UPCOMING-DIMMED')
@@ -570,7 +578,7 @@
 				// For rows, hide the row and the header too. We can't hide
 				// their entire parent because then we'll get the infinite
 				// page loader to load forever.
-				upcomingItem = 
+				upcomingItem =
 					// Grid item
 					item.closest('.ytd-grid-renderer') ||
 					item.closest('.ytd-item-section-renderer') ||
@@ -635,7 +643,7 @@
 
 	// ===========================================================
 
-	const renderButtons = function () {
+	const renderButtons = () => {
 		// Find button area target
 		const target = findButtonAreaTarget();
 		if (!target) return;
@@ -756,12 +764,12 @@
 
 	// ===========================================================
 
-	const observeDOM = (function () {
+	const observeDOM = (() => {
 		const MutationObserver =
 			window.MutationObserver || window.WebKitMutationObserver;
 		const eventListenerSupported = window.addEventListener;
 
-		return function (obj, callback) {
+		return (obj, callback) => {
 			logDebug('Attaching DOM listener');
 
 			// Invalid `obj` given
