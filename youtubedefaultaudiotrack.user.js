@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Default Audio Track
 // @namespace    bp-yt-audio-track-default
-// @version      2.5
+// @version      2.6
 // @description  Makes it possible to select the desired Audio Track played by default and adds a badge to indicate if multiple audio languages are available and if the language has been changed. Basé sur https://greasyfork.org/en/scripts/488877-youtube-default-audio-track
 // @author       BuIlDaLiBlE
 // @author       Lénaïc JAOUEN
@@ -89,9 +89,23 @@ function forceAudioTrack(player) {
         let isDefault = currentAudioTrack[languageObject].audioIsDefault;
         console.log("Audio track is:", currentLanguage, "Default:", isDefault);
 
-        if(!currentLanguage.toLowerCase().includes(DESIRED_AUDIO_TRACK.toLowerCase()) || !isDefault) {
+        let desiredTrackFound = false;
+        for(const track of availableAudioTracks) {
+            if(track[languageObject].name.toLowerCase().includes(DESIRED_AUDIO_TRACK.toLowerCase()) && track[languageObject].audioIsDefault) {
+                if (!isDefault || currentLanguage.toLowerCase() !== track[languageObject].name.toLowerCase()) {
+                    player.setAudioTrack(track);
+                    trackChanged = true;
+                    currentLanguage = track[languageObject].name;
+                    console.log("Audio track changed to:", currentLanguage);
+                }
+                desiredTrackFound = true;
+                break;
+            }
+        }
+
+        if (!desiredTrackFound && availableAudioTracks.length > 1) {
             for(const track of availableAudioTracks) {
-                if(track[languageObject].name.toLowerCase().includes(DESIRED_AUDIO_TRACK.toLowerCase()) && track[languageObject].audioIsDefault) {
+                if(track[languageObject].name.toLowerCase().includes(DESIRED_AUDIO_TRACK.toLowerCase())) {
                     player.setAudioTrack(track);
                     trackChanged = true;
                     currentLanguage = track[languageObject].name;
@@ -99,9 +113,6 @@ function forceAudioTrack(player) {
                     break;
                 }
             }
-        }
-        else {
-            trackChanged = false;
         }
 
         console.log("Audio track not changed. Current track:", currentLanguage);
