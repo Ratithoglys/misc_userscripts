@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Default Audio Track
 // @namespace    bp-yt-audio-track-default
-// @version      2.4
+// @version      2.5
 // @description  Makes it possible to select the desired Audio Track played by default and adds a badge to indicate if multiple audio languages are available and if the language has been changed. Basé sur https://greasyfork.org/en/scripts/488877-youtube-default-audio-track
 // @author       BuIlDaLiBlE
 // @author       Lénaïc JAOUEN
@@ -86,9 +86,12 @@ function forceAudioTrack(player) {
         }
 
         let currentLanguage = currentAudioTrack[languageObject].name;
-        if(!currentLanguage.toLowerCase().includes(DESIRED_AUDIO_TRACK.toLowerCase())) {
+        let isDefault = currentAudioTrack[languageObject].audioIsDefault;
+        console.log("Audio track is:", currentLanguage, "Default:", isDefault);
+
+        if(!currentLanguage.toLowerCase().includes(DESIRED_AUDIO_TRACK.toLowerCase()) || !isDefault) {
             for(const track of availableAudioTracks) {
-                if(track[languageObject].name.toLowerCase().includes(DESIRED_AUDIO_TRACK.toLowerCase())) {
+                if(track[languageObject].name.toLowerCase().includes(DESIRED_AUDIO_TRACK.toLowerCase()) && track[languageObject].audioIsDefault) {
                     player.setAudioTrack(track);
                     trackChanged = true;
                     currentLanguage = track[languageObject].name;
