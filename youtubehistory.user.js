@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube: Hide Watched Videos extended
 // @namespace    https://ebumna.net/
-// @version      6.7
+// @version      6.13
 // @license      MIT
 // @description  Hides watched videos from extension. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Ev Haus
@@ -26,15 +26,29 @@
 // You can open new issues at:
 // https://github.com/EvHaus/youtube-hide-watched/issues
 
+const REGEX_CHANNEL = /.*\/(user|channel|c)\/.+\/videos/u;
+const REGEX_USER = /.*\/@.*/u;
+
+const BLOCKED_CHANNELS = [
+    "The Diary Of A CEO",
+    "Blitzstream Facile",
+];
+
 ((_undefined) => {
 	// Enable for debugging
 	const DEBUG = false;
 
 	// Needed to bypass YouTube's Trusted Types restrictions, ie.
 	// Uncaught TypeError: Failed to set the 'innerHTML' property on 'Element': This document requires 'TrustedHTML' assignment.
-	if (window.trustedTypes?.createPolicy) {
-		window.trustedTypes.createPolicy('default', {
-			createHTML: (string, _sink) => string,
+	if (
+		typeof trustedTypes !== 'undefined' &&
+		trustedTypes.defaultPolicy === null
+	) {
+		const s = (s) => s;
+		trustedTypes.createPolicy('default', {
+			createHTML: s,
+			createScript: s,
+			createScriptURL: s,
 		});
 	}
 
@@ -88,17 +102,18 @@
 
 .YT-HWV-WATCHED-DIMMED { opacity: 0.3 }
 
-.YT-HWV-UPCOMING-HIDDEN { display: none !important }
-
-.YT-HWV-UPCOMING-DIMMED { background-color: rgba(0,200,255,0.2); opacity: 0.3 }
-
 .YT-HWV-HISTORY-HIDDEN { display: none !important }
-
 .YT-HWV-HISTORY-DIMMED { background-color: rgba(255,255,0,0.2); opacity: 0.3 }
 
 .YT-HWV-SHORTS-HIDDEN { display: none !important }
 
 .YT-HWV-SHORTS-DIMMED { opacity: 0.3 }
+
+.YT-HWV-UPCOMING-HIDDEN { display: none !important }
+.YT-HWV-UPCOMING-DIMMED { background-color: rgba(0,200,255,0.2); opacity: 0.3 }
+
+.YT-HWV-BLOCKED-CHANNEL-HIDDEN { display: none !important }
+.YT-HWV-BLOCKED-CHANNEL-DIMMED { background-color: rgba(200,0,255,0.2); opacity: 0.3 }
 
 .YT-HWV-HIDDEN-ROW-PARENT { padding-bottom: 10px }
 
@@ -162,9 +177,9 @@
 			type: 'toggle',
 		},
 		{
-			icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><path fill="currentColor" d="M24 9C14 9 5.46 15.22 2 24c3.46 8.78 12 15 22 15 10.01 0 18.54-6.22 22-15-3.46-8.78-11.99-15-22-15zm0 25c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10-4.48 10-10 10zm0-16c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"/></svg>',
+			icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><path fill="currentColor" d="M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4zm0 36c-8.84 0-16-7.16-16-16s7.16-16 16-16 16 7.16 16 16-7.16 16-16 16zm1-28v14l8 4.62-2 3.46-10-5.77V12h4z"/></svg>',
 			iconHidden:
-				'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><path fill="currentColor" d="M24 14c5.52 0 10 4.48 10 10 0 1.29-.26 2.52-.71 3.65l5.85 5.85c3.02-2.52 5.4-5.78 6.87-9.5-3.47-8.78-12-15-22.01-15-2.8 0-5.48.5-7.97 1.4l4.32 4.31c1.13-.44 2.36-.71 3.65-.71zM4 8.55l4.56 4.56.91.91C6.17 16.6 3.56 20.03 2 24c3.46 8.78 12 15 22 15 3.1 0 6.06-.6 8.77-1.69l.85.85L39.45 44 42 41.46 6.55 6 4 8.55zM15.06 19.6l3.09 3.09c-.09.43-.15.86-.15 1.31 0 3.31 2.69 6 6 6 .45 0 .88-.06 1.3-.15l3.09 3.09C27.06 33.6 25.58 34 24 34c-5.52 0-10-4.48-10-10 0-1.58.4-3.06 1.06-4.4zm8.61-1.57 6.3 6.3L30 24c0-3.31-2.69-6-6-6l-.33.03z"/></svg>',
+				'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><path fill="currentColor" d="M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4zm0 36c-8.84 0-16-7.16-16-16s7.16-16 16-16 16 7.16 16 16-7.16 16-16 16zm1-28v14l8 4.62-2 3.46-10-5.77V12h4z"/><path fill="currentColor" d="m7.501 5.55 4.066-2.42 24.26 40.78-4.065 2.418z"/></svg>',
 			name: 'Toggle History Videos',
 			stateKey: 'YTHWV_STATE_HISTORY',
 			type: 'toggle',
@@ -178,11 +193,19 @@
 			type: 'toggle',
 		},
 		{
-			icon: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><path fill="currentColor" d="M40.513 4.227h-8.884c-.444 0-.803.401-.803.887v19.78c0 .036-.035 2.781-.14 4.393-.564 3.964-2.549 5.724-6.42 5.724s-5.857-1.76-6.413-5.632c-.106-1.704-.141-4.442-.141-4.463V5.114c0-.493-.366-.887-.803-.887H8.02c-.444 0-.803.401-.803.887v19.809c0 .127 0 3.111.387 6.666.591 4.083 2.527 7.814 4.182 9.694 1.07 1.225 5.153 5.223 12.48 5.223s11.405-3.991 12.489-5.223c1.647-1.88 3.59-5.604 4.181-9.722.387-3.527.387-6.511.387-6.638V5.113a.81.894 0 0 0-.81-.886z"/></svg>',
+			icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6c-6 0-10 4-10 10v7l-3 6h26l-3-6v-7c0-6-4-10-10-10z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="24" cy="39" r="3" fill="currentColor"/></svg>',
 			iconHidden:
-				'<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><clipPath id="a"><path fill="#007fff" stroke-width="0" d="M20.22 8.24 34.613-.32l15.695 26.38-14.391 8.562zM-2.11 21.8l14.186-8.44 15.768 26.504-14.186 8.44z"/></clipPath><g fill-opacity=".3" fill="currentColor"><g clip-path="url(#a)"><path d="M40.513 4.227h-8.884c-.444 0-.803.401-.803.887v19.78c0 .036-.035 2.781-.14 4.393-.564 3.964-2.549 5.724-6.42 5.724s-5.857-1.76-6.413-5.632c-.106-1.704-.141-4.442-.141-4.463V5.114c0-.493-.366-.887-.803-.887H8.02c-.444 0-.803.401-.803.887v19.809c0 .127 0 3.111.387 6.666.591 4.083 2.527 7.814 4.182 9.694 1.07 1.225 5.153 5.223 12.48 5.223s11.405-3.991 12.489-5.223c1.647-1.88 3.59-5.604 4.181-9.722.387-3.527.387-6.511.387-6.638V5.113a.81.894 0 0 0-.81-.886z"/></g><path d="m7.501 5.55 4.066-2.42 24.26 40.78-4.065 2.418z"/></g></svg>',
+				'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6c-6 0-10 4-10 10v7l-3 6h26l-3-6v-7c0-6-4-10-10-10z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="24" cy="39" r="3" fill="currentColor"/><path fill="currentColor" d="m7.501 5.55 4.066-2.42 24.26 40.78-4.065 2.418z"/></svg>',
 			name: 'Toggle Upcoming',
 			stateKey: 'YTHWV_STATE_UPCOMING',
+			type: 'toggle',
+		},
+		{
+			icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M24,6 38,18 24,42 10,18Z M24,19a5,5 0 1 1 0,10a5,5 0 0 1 0-10Z"/></svg>',
+			iconHidden:
+				'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M24,6 38,18 24,42 10,18Z M24,19a5,5 0 1 1 0,10a5,5 0 0 1 0-10Z"/><path fill="currentColor" d="m7.501 5.55 4.066-2.42 24.26 40.78-4.065 2.418z"/></svg>',
+			name: 'Toggle Channels',
+			stateKey: 'YTHWV_STATE_BLOCKED_CHANNELS',
 			type: 'toggle',
 		},
 		{
@@ -214,6 +237,8 @@
 		const watched = document.querySelectorAll(
 			[
 				'.ytd-thumbnail-overlay-resume-playback-renderer',
+				// Recommended videos on the right-hand sidebar when watching a video
+				'.ytThumbnailOverlayProgressBarHostWatchedProgressBarSegment',
 				// 2025-02-01 Update
 				'.ytThumbnailOverlayProgressBarHostWatchedProgressBarSegmentModern',
 			].join(','),
@@ -268,11 +293,14 @@
 			document.querySelectorAll(
 				'ytd-reel-shelf-renderer .ytd-reel-shelf-renderer',
 			),
+			// Search results apge (2025-06 update)
+			document.querySelectorAll('ytm-shorts-lockup-view-model-v2'),
 		].reduce((acc, matches) => {
 			matches?.forEach((child) => {
 				const container =
 					child.closest('ytd-reel-shelf-renderer') ||
-					child.closest('ytd-rich-shelf-renderer');
+					child.closest('ytd-rich-shelf-renderer') ||
+					child.closest('grid-shelf-view-model');
 				if (container && !acc.includes(container)) acc.push(container);
 			});
 			return acc;
@@ -322,10 +350,7 @@
 		let youtubeSection = 'misc';
 		if (href.includes('/watch?')) {
 			youtubeSection = 'watch';
-		} else if (
-			href.match(/.*\/(user|channel|c)\/.+\/videos/u) ||
-			href.match(/.*\/@.*/u)
-		) {
+		} else if (href.match(REGEX_CHANNEL) || href.match(REGEX_USER)) {
 			youtubeSection = 'channel';
 		} else if (href.includes('/feed/subscriptions')) {
 			youtubeSection = 'subscriptions';
@@ -333,7 +358,10 @@
 			youtubeSection = 'trending';
 		} else if (href.includes('/playlist?')) {
 			youtubeSection = 'playlist';
+		} else if (href.includes('/results?')) {
+			youtubeSection = 'search';
 		}
+
 		return youtubeSection;
 	};
 
@@ -385,7 +413,10 @@
 			} else if (section === 'playlist') {
 				watchedItem = item.closest('ytd-playlist-video-renderer');
 			} else if (section === 'watch') {
-				watchedItem = item.closest('ytd-compact-video-renderer');
+				watchedItem =
+					item.closest('ytd-compact-video-renderer') ||
+					// Recommended videos on the right-hand sidebar when watching a video (#370)
+					item.closest('yt-lockup-view-model');
 
 				// Don't hide video if it's going to play next.
 				//
@@ -478,7 +509,10 @@
 			} else if (section === 'playlist') {
 				watchedItem = item.closest('ytd-playlist-video-renderer');
 			} else if (section === 'watch') {
-				watchedItem = item.closest('ytd-compact-video-renderer');
+				watchedItem =
+					item.closest('ytd-compact-video-renderer') ||
+					// Recommended videos on the right-hand sidebar when watching a video (#370)
+					item.closest('yt-lockup-view-model');
 
 				// Don't hide video if it's going to play next.
 				//
@@ -486,16 +520,15 @@
 				// `ytd-playlist-panel-video-renderer`:
 				// let's also ignore it as in case of shuffle enabled
 				// we could accidentially hide the item which gonna play next.
-				if (
-					watchedItem &&
-					watchedItem.closest('ytd-compact-autoplay-renderer')
-				) {
+				if (watchedItem?.closest('ytd-compact-autoplay-renderer')) {
 					watchedItem = null;
 				}
 
 				// For playlist items, we never hide them, but we will dim
 				// them even if current mode is to hide rather than dim.
-				const watchedItemInPlaylist = item.closest('ytd-playlist-panel-video-renderer');
+				const watchedItemInPlaylist = item.closest(
+					'ytd-playlist-panel-video-renderer',
+				);
 				if (!watchedItem && watchedItemInPlaylist) {
 					dimmedItem = watchedItemInPlaylist;
 				}
@@ -597,7 +630,10 @@
 			} else if (section === 'playlist') {
 				upcomingItem = item.closest('ytd-playlist-video-renderer');
 			} else if (section === 'watch') {
-				upcomingItem = item.closest('ytd-compact-video-renderer');
+				upcomingItem =
+					item.closest('ytd-compact-video-renderer') ||
+					// Recommended videos on the right-hand sidebar when watching a video (#370)
+					item.closest('yt-lockup-view-model');
 
 				// Don't hide video if it's going to play next.
 				//
@@ -605,16 +641,15 @@
 				// `ytd-playlist-panel-video-renderer`:
 				// let's also ignore it as in case of shuffle enabled
 				// we could accidentially hide the item which gonna play next.
-				if (
-					upcomingItem &&
-					upcomingItem.closest('ytd-compact-autoplay-renderer')
-				) {
+				if (upcomingItem?.closest('ytd-compact-autoplay-renderer')) {
 					upcomingItem = null;
 				}
 
 				// For playlist items, we never hide them, but we will dim
 				// them even if current mode is to hide rather than dim.
-				const upcomingItemInPlaylist = item.closest('ytd-playlist-panel-video-renderer');
+				const upcomingItemInPlaylist = item.closest(
+					'ytd-playlist-panel-video-renderer',
+				);
 				if (!upcomingItem && upcomingItemInPlaylist) {
 					dimmedItem = upcomingItemInPlaylist;
 				}
@@ -637,6 +672,55 @@
 
 			if (dimmedItem && (state === 'dimmed' || state === 'hidden')) {
 				dimmedItem.classList.add('YT-HWV-UPCOMING-DIMMED');
+			}
+		});
+	};
+
+	// ===========================================================
+
+	const updateClassOnBlockedChannelItems = () => {
+        // Do nothing if empty list
+		if (!BLOCKED_CHANNELS || BLOCKED_CHANNELS.length === 0) {
+			return;
+		}
+
+        // Remove existing classes
+		document
+			.querySelectorAll('.YT-HWV-BLOCKED-CHANNEL-DIMMED')
+			.forEach((el) => el.classList.remove('YT-HWV-BLOCKED-CHANNEL-DIMMED'));
+		document
+			.querySelectorAll('.YT-HWV-BLOCKED-CHANNEL-HIDDEN')
+			.forEach((el) => el.classList.remove('YT-HWV-BLOCKED-CHANNEL-HIDDEN'));
+
+		// If we're on the History page -- do nothing. We don't want to hide
+		// watched videos here.
+		if (window.location.href.indexOf('/feed/history') >= 0) return;
+
+		const section = determineYoutubeSection();
+		const state = localStorage[`YTHWV_STATE_BLOCKED_CHANNELS_${section}`];
+
+		// Si l'état est "normal", on ne fait rien
+		if (state === 'normal' || !state) {
+			return;
+		}
+
+		// Sélecteur général pour toutes les vidéos
+		const videoItems = document.querySelectorAll('ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer, ytd-compact-video-renderer');
+
+		videoItems.forEach(item => {
+			// Le nom de la chaîne est généralement dans ce sélecteur
+			const channelNameElement = item.querySelector('.yt-core-attributed-string__link');
+			if (channelNameElement) {
+				const channelName = channelNameElement.textContent.trim();
+
+				// Vérifier si le nom de la chaîne est dans notre liste de blocage
+				if (BLOCKED_CHANNELS.includes(channelName)) {
+					if (state === 'dimmed') {
+						item.classList.add('YT-HWV-BLOCKED-CHANNEL-DIMMED');
+					} else if (state === 'hidden') {
+						item.classList.add('YT-HWV-BLOCKED-CHANNEL-HIDDEN');
+					}
+				}
 			}
 		});
 	};
@@ -693,6 +777,7 @@
 						updateClassOnHistoryItems();
 						updateClassOnShortsItems();
 						updateClassOnUpcomingItems();
+                        updateClassOnBlockedChannelItems();
 						renderButtons();
 					});
 					break;
@@ -716,27 +801,23 @@
 	};
 
 	const run = debounce((mutations) => {
-		// don't react if only *OUR* own buttons changed state
+		// Don't react if only our own buttons changed state
 		// to avoid running an endless loop
-
-		if (mutations && mutations.length === 1) {
-			return;
-		}
-
 		if (
-			mutations[0].target.classList.contains('YT-HWV-BUTTON') ||
-			mutations[0].target.classList.contains('YT-HWV-BUTTON-SHORTS')
+			mutations &&
+			mutations.length === 1 &&
+			(mutations[0].target.classList.contains('YT-HWV-BUTTON') ||
+				mutations[0].target.classList.contains('YT-HWV-BUTTON-SHORTS'))
 		) {
 			return;
 		}
-
-		// something *ELSE* changed state (not our buttons), so keep going
 
 		logDebug('Running check for watched videos, and shorts');
 		updateClassOnWatchedItems();
 		updateClassOnHistoryItems();
 		updateClassOnShortsItems();
 		updateClassOnUpcomingItems();
+        updateClassOnBlockedChannelItems();
 		renderButtons();
 	}, 250);
 
@@ -777,6 +858,15 @@
 
 			if (MutationObserver) {
 				const obs = new MutationObserver((mutations, _observer) => {
+					// If the mutation is the script's own buttons being injected, ignore the event
+					if (
+						mutations.length === 1 &&
+						mutations[0].addedNodes?.length === 1 &&
+						mutations[0].addedNodes[0].classList.contains('YT-HWV-BUTTONS')
+					) {
+						return;
+					}
+
 					if (
 						mutations[0].addedNodes.length ||
 						mutations[0].removedNodes.length
