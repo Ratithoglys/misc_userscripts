@@ -29,11 +29,10 @@
 const REGEX_CHANNEL = /.*\/(user|channel|c)\/.+\/videos/u;
 const REGEX_USER = /.*\/@.*/u;
 
-const BLOCKED_CHANNELS = [
-    "The Diary Of A CEO",
-    "Blitzstream Facile",
-];
-
+// const BLOCKED_CHANNELS = [
+//     "The Diary Of A CEO",
+//     "Blitzstream Facile",
+// ];
 ((_undefined) => {
 	// Enable for debugging
 	const DEBUG = false;
@@ -61,6 +60,7 @@ const BLOCKED_CHANNELS = [
 		events: {
 			save() {
 				this.close();
+                run();
 			},
 		},
 		fields: {
@@ -70,6 +70,11 @@ const BLOCKED_CHANNELS = [
 				max: 100,
 				min: 0,
 				type: 'int',
+			},
+			BLOCKED_CHANNELS_LIST: {
+				label: 'Blocked Channels (one per line)',
+				type: 'textarea',
+				default: '',
 			},
 		},
 		id: 'YouTubeHideWatchedVideos',
@@ -678,11 +683,15 @@ const BLOCKED_CHANNELS = [
 
 	// ===========================================================
 
+	const getBlockedChannels = () => {
+		const list = gmc.get('BLOCKED_CHANNELS_LIST') || '';
+		return list.split('\n').map(c => c.trim()).filter(c => c.length > 0);
+	};
+
 	const updateClassOnBlockedChannelItems = () => {
         // Do nothing if empty list
-		if (!BLOCKED_CHANNELS || BLOCKED_CHANNELS.length === 0) {
-			return;
-		}
+		const BLOCKED_CHANNELS = getBlockedChannels();
+		if (!BLOCKED_CHANNELS || BLOCKED_CHANNELS.length === 0) return;
 
         // Remove existing classes
 		document
@@ -725,7 +734,69 @@ const BLOCKED_CHANNELS = [
 		});
 	};
 
-	// ===========================================================
+    const injectBlockChannelButtons = () => {
+        const videos = document.querySelectorAll(
+            'ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer, ytd-compact-video-renderer'
+        );
+
+        videos.forEach(item => {
+            const channelLink = item.querySelector('.yt-core-attributed-string__link');
+            if (!channelLink) return;
+
+            const channelName = channelLink.textContent.trim();
+
+            // Éviter d'ajouter plusieurs fois le bouton
+            if (item.querySelector('.yt-hwv-block-btn')) return;
+
+            const btn = document.createElement('span');
+            btn.textContent = '🚫';
+            btn.title = `Black channel "${channelName}"`;
+            btn.className = 'yt-hwv-block-btn';
+            btn.style.cursor = 'pointer';
+            btn.style.fontSize = '11px';
+            btn.style.marginRight = '4px';
+            btn.style.opacity = '0.5';
+            btn.style.userSelect = 'none';
+
+            const updateBtnIcon = () => {
+                const current = getBlockedChannels();
+                btn.textContent = current.includes(channelName) ? '✅' : '🚫';
+                btn.title = current.includes(channelName)
+                    ? `Débloquer la chaîne "${channelName}"`
+                : `Bloquer la chaîne "${channelName}"`;
+            };
+
+            updateBtnIcon();
+
+            btn.addEventListener('mouseenter', () => btn.style.opacity = '1');
+            btn.addEventListener('mouseleave', () => btn.style.opacity = '0.5');
+
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const current = getBlockedChannels();
+                if (current.includes(channelName)) {
+                    // Retirer de la liste
+                    const index = current.indexOf(channelName);
+                    current.splice(index, 1);
+                } else {
+                    // Ajouter à la liste
+                    current.push(channelName);
+                }
+
+                gmc.set('BLOCKED_CHANNELS_LIST', current.join('\n'));
+                gmc.save();
+                updateClassOnBlockedChannelItems();
+                updateBtnIcon();
+            });
+
+            // Insertion AVANT le nom de la chaîne
+            channelLink.parentNode.insertBefore(btn, channelLink);
+        });
+    };
+
+    // ===========================================================
 
 	const renderButtons = () => {
 		// Find button area target
@@ -818,6 +889,7 @@ const BLOCKED_CHANNELS = [
 		updateClassOnShortsItems();
 		updateClassOnUpcomingItems();
         updateClassOnBlockedChannelItems();
+		injectBlockChannelButtons();
 		renderButtons();
 	}, 250);
 
