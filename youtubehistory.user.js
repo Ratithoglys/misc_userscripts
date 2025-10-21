@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube: Hide Watched Videos extended
 // @namespace    https://ebumna.net/
-// @version      6.13c
+// @version      6.13d
 // @license      MIT
 // @description  Hides watched videos from extension. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Ev Haus
@@ -56,7 +56,7 @@ const REGEX_USER = /.*\/@.*/u;
 		events: {
 			save() {
 				this.close();
-                run();
+				run();
 			},
 		},
 		fields: {
@@ -121,9 +121,9 @@ const REGEX_USER = /.*\/@.*/u;
 .YT-HWV-BUTTONS {
 	background: transparent;
 	border: 1px solid var(--ytd-searchbox-legacy-border-color);
-    border-radius: 40px;
-    display: flex;
-    gap: 5px;
+	border-radius: 40px;
+	display: flex;
+	gap: 5px;
 	margin: 0 20px;
 }
 
@@ -131,12 +131,12 @@ const REGEX_USER = /.*\/@.*/u;
 	align-items: center;
 	background: transparent;
 	border: 0;
-    border-radius: 40px;
+	border-radius: 40px;
 	color: var(--yt-spec-icon-inactive);
 	cursor: pointer;
-    display: flex;
+	display: flex;
 	height: 40px;
-    justify-content: center;
+	justify-content: center;
 	outline: 0;
 	width: 40px;
 }
@@ -334,12 +334,12 @@ const REGEX_USER = /.*\/@.*/u;
 		// 	'[overlay-style=UPCOMING]'
 		// );
 
-        const upcoming = Array.from(
-            document.querySelectorAll(
-                'div.yt-badge-shape__text:not(:empty)'
-            )).filter(e => e.textContent.trim() === 'Upcoming')
+		const upcoming = Array.from(
+			document.querySelectorAll(
+				'div.yt-badge-shape__text:not(:empty)'
+			)).filter(e => e.textContent.trim() === 'Upcoming')
 
-        logDebug(
+		logDebug(
 			`Found ${upcoming.length} upcoming elements in history `
 		);
 
@@ -694,12 +694,22 @@ const REGEX_USER = /.*\/@.*/u;
 		return list.split('\n').map(c => c.trim()).filter(c => c.length > 0);
 	};
 
+	const getChannelNamesFromString = (rawString) => {
+		if (!rawString) return [];
+		// Sépare la chaîne par " and "
+		const potentialNames = rawString.split(/\s+and\s+/i);
+		// Nettoie les résultats pour enlever les "X more" et les espaces superflus
+		return potentialNames
+			.map(name => name.trim())
+			.filter(name => !/^\d+\s+more$/i.test(name)); // Exclut les "3 more", etc.
+	};
+
 	const updateClassOnBlockedChannelItems = () => {
-        // Do nothing if empty list
+		// Do nothing if empty list
 		const BLOCKED_CHANNELS = getBlockedChannels();
 		if (!BLOCKED_CHANNELS || BLOCKED_CHANNELS.length === 0) return;
 
-        // Remove existing classes
+		// Remove existing classes
 		document
 			.querySelectorAll('.YT-HWV-BLOCKED-CHANNEL-DIMMED')
 			.forEach((el) => el.classList.remove('YT-HWV-BLOCKED-CHANNEL-DIMMED'));
@@ -726,10 +736,14 @@ const REGEX_USER = /.*\/@.*/u;
 			// Le nom de la chaîne est généralement dans ce sélecteur
 			const channelNameElement = item.querySelector('.yt-core-attributed-string__link');
 			if (channelNameElement) {
-				const channelName = channelNameElement.textContent.trim();
+				const rawChannelName = channelNameElement.textContent.trim();
+				// Utilise la nouvelle fonction pour obtenir une liste de chaînes
+				const parsedChannelNames = getChannelNamesFromString(rawChannelName);
 
-				// Vérifier si le nom de la chaîne est dans notre liste de blocage
-				if (BLOCKED_CHANNELS.includes(channelName)) {
+				// Vérifie si AU MOINS UNE des chaînes extraites est dans la liste de blocage
+				const isBlocked = parsedChannelNames.some(name => BLOCKED_CHANNELS.includes(name));
+
+				if (isBlocked) {
 					if (state === 'dimmed') {
 						item.classList.add('YT-HWV-BLOCKED-CHANNEL-DIMMED');
 					} else if (state === 'hidden') {
@@ -740,89 +754,90 @@ const REGEX_USER = /.*\/@.*/u;
 		});
 	};
 
-    const injectBlockChannelButtons = () => {
-        const videos = document.querySelectorAll(
-            'ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer, ytd-compact-video-renderer'
-        );
+	const injectBlockChannelButtons = () => {
+		const videos = document.querySelectorAll(
+			'ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer, ytd-compact-video-renderer'
+		);
 
-        videos.forEach(item => {
-            const channelLink = item.querySelector('.yt-core-attributed-string__link');
-            if (!channelLink) return;
+		videos.forEach(item => {
+			const channelLink = item.querySelector('.yt-core-attributed-string__link');
+			if (!channelLink || item.querySelector('.yt-hwv-block-btn')) return;
 
-            const channelName = channelLink.textContent.trim();
+			const rawChannelName = channelLink.textContent.trim();
+			const parsedChannelNames = getChannelNamesFromString(rawChannelName);
 
-            // Éviter d'ajouter plusieurs fois le bouton
-            if (item.querySelector('.yt-hwv-block-btn')) return;
+			// On agit sur la première chaîne de la liste
+			const primaryChannelName = parsedChannelNames[0];
+			if (!primaryChannelName) return; // Sécurité
 
-            const btn = document.createElement('span');
-            btn.textContent = '🚫';
-            btn.title = `Black channel "${channelName}"`;
-            btn.className = 'yt-hwv-block-btn';
-            btn.style.cursor = 'pointer';
-            btn.style.fontSize = '11px';
-            btn.style.marginRight = '4px';
-            btn.style.opacity = '0.5';
-            btn.style.userSelect = 'none';
+			const btn = document.createElement('span');
+			btn.className = 'yt-hwv-block-btn';
+			btn.style.cursor = 'pointer';
+			btn.style.fontSize = '11px';
+			btn.style.marginRight = '4px';
+			btn.style.opacity = '0.5';
+			btn.style.userSelect = 'none';
 
-            const updateBtnIcon = () => {
-                const current = getBlockedChannels();
-                btn.textContent = current.includes(channelName) ? '✅' : '🚫';
-                btn.title = current.includes(channelName)
-                    ? `Débloquer la chaîne "${channelName}"`
-                : `Bloquer la chaîne "${channelName}"`;
-            };
+			const updateBtnIcon = () => {
+				const current = getBlockedChannels();
+				const isBlocked = current.includes(primaryChannelName);
+				btn.textContent = isBlocked ? '✅' : '🚫';
+				btn.title = isBlocked
+					? `Débloquer la chaîne "${primaryChannelName}"`
+					: `Bloquer la chaîne "${primaryChannelName}"`;
+			};
 
-            updateBtnIcon();
+			updateBtnIcon();
 
-            btn.addEventListener('mouseenter', () => btn.style.opacity = '1');
-            btn.addEventListener('mouseleave', () => btn.style.opacity = '0.5');
+			btn.addEventListener('mouseenter', () => btn.style.opacity = '1');
+			btn.addEventListener('mouseleave', () => btn.style.opacity = '0.5');
 
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+			btn.addEventListener('click', (e) => {
+				e.preventDefault();
+				e.stopPropagation();
 
-                const current = getBlockedChannels();
-                if (current.includes(channelName)) {
-                    // Retirer de la liste
-                    const index = current.indexOf(channelName);
-                    current.splice(index, 1);
-                } else {
-                    // Ajouter à la liste
-                    current.push(channelName);
-                }
+				const current = getBlockedChannels();
+				if (current.includes(primaryChannelName)) {
+					// Retirer de la liste
+					const index = current.indexOf(primaryChannelName);
+					current.splice(index, 1);
+				} else {
+					// Ajouter à la liste
+					current.push(primaryChannelName);
+				}
 
-                gmc.set('BLOCKED_CHANNELS_LIST', current.join('\n'));
-                gmc.save();
-                updateClassOnBlockedChannelItems();
-                updateBtnIcon();
-            });
+				gmc.set('BLOCKED_CHANNELS_LIST', current.join('\n'));
+				gmc.save(); // La sauvegarde déclenchera run() qui mettra tout à jour
+				updateClassOnBlockedChannelItems();
+				updateBtnIcon();
+			});
 
-            // Insertion AVANT le nom de la chaîne
-            channelLink.parentNode.insertBefore(btn, channelLink);
-        });
-    };
+			// Insertion AVANT le nom de la chaîne
+			channelLink.parentNode.insertBefore(btn, channelLink);
+		});
+	};
 
-    // ===========================================================
+	// ===========================================================
 
-    const removeHiddenElements = () => {
-        const hiddenSelectors = [
-            '.YT-HWV-WATCHED-HIDDEN',
-            '.YT-HWV-HISTORY-HIDDEN',
-            '.YT-HWV-SHORTS-HIDDEN',
-            '.YT-HWV-UPCOMING-HIDDEN',
-            '.YT-HWV-BLOCKED-CHANNEL-HIDDEN'
-        ].join(',');
+	const removeHiddenElements = () => {
+		const hiddenSelectors = [
+			'.YT-HWV-WATCHED-HIDDEN',
+			'.YT-HWV-HISTORY-HIDDEN',
+			'.YT-HWV-SHORTS-HIDDEN',
+			'.YT-HWV-UPCOMING-HIDDEN',
+			'.YT-HWV-BLOCKED-CHANNEL-HIDDEN'
+		].join(',');
 
-        const elementsToRemove = document.querySelectorAll(hiddenSelectors);
+		const elementsToRemove = document.querySelectorAll(hiddenSelectors);
 
-        logDebug(`Removing ${elementsToRemove.length} hidden elements from the DOM.`);
+		logDebug(`Removing ${elementsToRemove.length} hidden elements from the DOM.`);
 
-        elementsToRemove.forEach(el => el.remove());
-    };
+		elementsToRemove.forEach(el => el.remove());
+	};
 
-    // ===========================================================
+	// ===========================================================
 
-    const renderButtons = () => {
+	const renderButtons = () => {
 		// Find button area target
 		const target = findButtonAreaTarget();
 		if (!target) return;
@@ -872,7 +887,7 @@ const REGEX_USER = /.*\/@.*/u;
 						updateClassOnHistoryItems();
 						updateClassOnShortsItems();
 						updateClassOnUpcomingItems();
-                        updateClassOnBlockedChannelItems();
+						updateClassOnBlockedChannelItems();
 						renderButtons();
 					});
 					break;
@@ -918,7 +933,7 @@ const REGEX_USER = /.*\/@.*/u;
 		updateClassOnHistoryItems();
 		updateClassOnShortsItems();
 		updateClassOnUpcomingItems();
-        updateClassOnBlockedChannelItems();
+		updateClassOnBlockedChannelItems();
 		injectBlockChannelButtons();
 		renderButtons();
 	}, 250);
