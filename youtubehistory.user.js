@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube: Hide Watched Videos extended
 // @namespace    https://ebumna.net/
-// @version      6.13
+// @version      6.13c
 // @license      MIT
 // @description  Hides watched videos from extension. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Ev Haus
@@ -29,10 +29,6 @@
 const REGEX_CHANNEL = /.*\/(user|channel|c)\/.+\/videos/u;
 const REGEX_USER = /.*\/@.*/u;
 
-// const BLOCKED_CHANNELS = [
-//     "The Diary Of A CEO",
-//     "Blitzstream Facile",
-// ];
 ((_undefined) => {
 	// Enable for debugging
 	const DEBUG = false;
@@ -218,6 +214,11 @@ const REGEX_USER = /.*\/@.*/u;
 			name: 'Settings',
 			type: 'settings',
 		},
+		{
+			icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>',
+			name: 'Remove hidden items from DOM',
+			type: 'action',
+		},
 	];
 
 	// ===========================================================
@@ -329,11 +330,16 @@ const REGEX_USER = /.*\/@.*/u;
 	// ===========================================================
 
 	const findUpcomingElements = () => {
-		const upcoming = document.querySelectorAll(
-			'[overlay-style=UPCOMING]'
-		);
+		// const upcoming = document.querySelectorAll(
+		// 	'[overlay-style=UPCOMING]'
+		// );
 
-		logDebug(
+        const upcoming = Array.from(
+            document.querySelectorAll(
+                'div.yt-badge-shape__text:not(:empty)'
+            )).filter(e => e.textContent.trim() === 'Upcoming')
+
+        logDebug(
 			`Found ${upcoming.length} upcoming elements in history `
 		);
 
@@ -798,7 +804,25 @@ const REGEX_USER = /.*\/@.*/u;
 
     // ===========================================================
 
-	const renderButtons = () => {
+    const removeHiddenElements = () => {
+        const hiddenSelectors = [
+            '.YT-HWV-WATCHED-HIDDEN',
+            '.YT-HWV-HISTORY-HIDDEN',
+            '.YT-HWV-SHORTS-HIDDEN',
+            '.YT-HWV-UPCOMING-HIDDEN',
+            '.YT-HWV-BLOCKED-CHANNEL-HIDDEN'
+        ].join(',');
+
+        const elementsToRemove = document.querySelectorAll(hiddenSelectors);
+
+        logDebug(`Removing ${elementsToRemove.length} hidden elements from the DOM.`);
+
+        elementsToRemove.forEach(el => el.remove());
+    };
+
+    // ===========================================================
+
+    const renderButtons = () => {
 		// Find button area target
 		const target = findButtonAreaTarget();
 		if (!target) return;
@@ -850,6 +874,12 @@ const REGEX_USER = /.*\/@.*/u;
 						updateClassOnUpcomingItems();
                         updateClassOnBlockedChannelItems();
 						renderButtons();
+					});
+					break;
+				case 'action':
+					button.addEventListener('click', () => {
+						logDebug(`Button ${name} clicked.`);
+						removeHiddenElements();
 					});
 					break;
 				case 'settings':
