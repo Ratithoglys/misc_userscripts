@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube: Hide Watched Videos extended
 // @namespace    https://ebumna.net/
-// @version      6.13d
+// @version      6.13e
 // @license      MIT
 // @description  Hides watched videos from extension. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Ev Haus
@@ -113,6 +113,9 @@ const REGEX_USER = /.*\/@.*/u;
 .YT-HWV-UPCOMING-HIDDEN { display: none !important }
 .YT-HWV-UPCOMING-DIMMED { background-color: rgba(0,200,255,0.2); opacity: 0.3 }
 
+.YT-HWV-MIXES-HIDDEN { display: none !important }
+.YT-HWV-MIXES-DIMMED { opacity: 0.3 }
+
 .YT-HWV-BLOCKED-CHANNEL-HIDDEN { display: none !important }
 .YT-HWV-BLOCKED-CHANNEL-DIMMED { background-color: rgba(200,0,255,0.2); opacity: 0.3 }
 
@@ -199,6 +202,13 @@ const REGEX_USER = /.*\/@.*/u;
 				'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6c-6 0-10 4-10 10v7l-3 6h26l-3-6v-7c0-6-4-10-10-10z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="24" cy="39" r="3" fill="currentColor"/><path fill="currentColor" d="m7.501 5.55 4.066-2.42 24.26 40.78-4.065 2.418z"/></svg>',
 			name: 'Toggle Upcoming',
 			stateKey: 'YTHWV_STATE_UPCOMING',
+			type: 'toggle',
+		},
+		{
+            icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>',
+			iconHidden:
+				'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M4.27 3L3 4.27l9 9v.28c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4v-1.73L19.73 21 21 19.73 4.27 3zM14 7h4V3h-6v5.18l2 2z"/></svg>',			name: 'Toggle Mixes',
+			stateKey: 'YTHWV_STATE_MIXES',
 			type: 'toggle',
 		},
 		{
@@ -344,6 +354,23 @@ const REGEX_USER = /.*\/@.*/u;
 		);
 
 		return upcoming;
+	};
+
+	// ===========================================================
+
+	const findMixesElements = () => {
+		const icons = document.querySelectorAll('ytd-rich-item-renderer yt-thumbnail-overlay-badge-view-model .yt-badge-shape__icon');
+		const mixes = [];
+		icons.forEach(icon => {
+			const container = icon.closest('ytd-rich-item-renderer');
+			if (container) mixes.push(container);
+		});
+
+		logDebug(
+			`Found ${mixes.length} mix elements`
+		);
+
+		return mixes;
 	};
 
 	// ===========================================================
@@ -689,6 +716,32 @@ const REGEX_USER = /.*\/@.*/u;
 
 	// ===========================================================
 
+	const updateClassOnMixesItems = () => {
+		const section = determineYoutubeSection();
+
+		document
+			.querySelectorAll('.YT-HWV-MIXES-DIMMED')
+			.forEach((el) => el.classList.remove('YT-HWV-MIXES-DIMMED'));
+		document
+			.querySelectorAll('.YT-HWV-MIXES-HIDDEN')
+			.forEach((el) => el.classList.remove('YT-HWV-MIXES-HIDDEN'));
+
+		const state = localStorage[`YTHWV_STATE_MIXES_${section}`];
+
+		const mixesItems = findMixesElements();
+
+		mixesItems.forEach((item) => {
+			// Add current class
+			if (state === 'dimmed') {
+				item.classList.add('YT-HWV-MIXES-DIMMED');
+			} else if (state === 'hidden') {
+				item.classList.add('YT-HWV-MIXES-HIDDEN');
+			}
+		});
+	};
+
+	// ===========================================================
+
 	const getBlockedChannels = () => {
 		const list = gmc.get('BLOCKED_CHANNELS_LIST') || '';
 		return list.split('\n').map(c => c.trim()).filter(c => c.length > 0);
@@ -825,6 +878,7 @@ const REGEX_USER = /.*\/@.*/u;
 			'.YT-HWV-HISTORY-HIDDEN',
 			'.YT-HWV-SHORTS-HIDDEN',
 			'.YT-HWV-UPCOMING-HIDDEN',
+			'.YT-HWV-MIXES-HIDDEN',
 			'.YT-HWV-BLOCKED-CHANNEL-HIDDEN'
 		].join(',');
 
@@ -887,6 +941,7 @@ const REGEX_USER = /.*\/@.*/u;
 						updateClassOnHistoryItems();
 						updateClassOnShortsItems();
 						updateClassOnUpcomingItems();
+						updateClassOnMixesItems();
 						updateClassOnBlockedChannelItems();
 						renderButtons();
 					});
@@ -933,6 +988,7 @@ const REGEX_USER = /.*\/@.*/u;
 		updateClassOnHistoryItems();
 		updateClassOnShortsItems();
 		updateClassOnUpcomingItems();
+		updateClassOnMixesItems();
 		updateClassOnBlockedChannelItems();
 		injectBlockChannelButtons();
 		renderButtons();
