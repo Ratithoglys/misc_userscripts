@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube: Hide Watched Videos extended
 // @namespace    https://ebumna.net/
-// @version      6.13e
+// @version      6.13h
 // @license      MIT
 // @description  Hides watched videos from extension. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Ev Haus
@@ -34,7 +34,6 @@ const REGEX_USER = /.*\/@.*/u;
 	const DEBUG = false;
 
 	// Needed to bypass YouTube's Trusted Types restrictions, ie.
-	// Uncaught TypeError: Failed to set the 'innerHTML' property on 'Element': This document requires 'TrustedHTML' assignment.
 	if (
 		typeof trustedTypes !== 'undefined' &&
 		trustedTypes.defaultPolicy === null
@@ -84,8 +83,6 @@ const REGEX_USER = /.*\/@.*/u;
 		if (DEBUG) console.debug('[YT-HWV]', msgs);
 	};
 
-	// GreaseMonkey no longer supports GM_addStyle. So we have to define
-	// our own polyfill here
 	const addStyle = (aCss) => {
 		const head = document.getElementsByTagName('head')[0];
 		if (head) {
@@ -135,7 +132,7 @@ const REGEX_USER = /.*\/@.*/u;
 	background: transparent;
 	border: 0;
 	border-radius: 40px;
-	color: var(--yt-spec-icon-inactive);
+	color: var(--yt-spec-text-primary);
 	cursor: pointer;
 	display: flex;
 	height: 40px;
@@ -149,7 +146,10 @@ const REGEX_USER = /.*\/@.*/u;
 	background: var(--yt-spec-badge-chip-background);
 }
 
-.YT-HWV-BUTTON-DISABLED { color: var(--yt-spec-icon-disabled) }
+.YT-HWV-BUTTON-DISABLED {
+    color: var(--yt-spec-text-primary);
+    opacity: 0.4;
+}
 
 .YT-HWV-MENU {
 	background: #F8F8F8;
@@ -253,9 +253,7 @@ const REGEX_USER = /.*\/@.*/u;
 		const watched = document.querySelectorAll(
 			[
 				'.ytd-thumbnail-overlay-resume-playback-renderer',
-				// Recommended videos on the right-hand sidebar when watching a video
 				'.ytThumbnailOverlayProgressBarHostWatchedProgressBarSegment',
-				// 2025-02-01 Update
 				'.ytThumbnailOverlayProgressBarHostWatchedProgressBarSegmentModern',
 			].join(','),
 		);
@@ -757,7 +755,7 @@ const REGEX_USER = /.*\/@.*/u;
 			.filter(name => !/^\d+\s+more$/i.test(name)); // Exclut les "3 more", etc.
 	};
 
-	const updateClassOnBlockedChannelItems = () => {
+    const updateClassOnBlockedChannelItems = () => {
 		// Do nothing if empty list
 		const BLOCKED_CHANNELS = getBlockedChannels();
 		if (!BLOCKED_CHANNELS || BLOCKED_CHANNELS.length === 0) return;
@@ -783,14 +781,14 @@ const REGEX_USER = /.*\/@.*/u;
 		}
 
 		// Sélecteur général pour toutes les vidéos
-		const videoItems = document.querySelectorAll('ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer, ytd-compact-video-renderer');
+		const videoItems = document.querySelectorAll('ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer, ytd-compact-video-renderer, ytd-reel-item-renderer');
 
 		videoItems.forEach(item => {
-			// Le nom de la chaîne est généralement dans ce sélecteur
-			const channelNameElement = item.querySelector('.yt-core-attributed-string__link');
-			if (channelNameElement) {
-				const rawChannelName = channelNameElement.textContent.trim();
-				// Utilise la nouvelle fonction pour obtenir une liste de chaînes
+			// MISE A JOUR : On cherche soit l'ancien format (ytd-channel-name a), soit le nouveau format (yt-content-metadata... a)
+			const channelLink = item.querySelector('ytd-channel-name a, yt-content-metadata-view-model .yt-core-attributed-string__link');
+
+			if (channelLink) {
+				const rawChannelName = channelLink.textContent.trim();
 				const parsedChannelNames = getChannelNamesFromString(rawChannelName);
 
 				// Vérifie si AU MOINS UNE des chaînes extraites est dans la liste de blocage
@@ -809,12 +807,15 @@ const REGEX_USER = /.*\/@.*/u;
 
 	const injectBlockChannelButtons = () => {
 		const videos = document.querySelectorAll(
-			'ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer, ytd-compact-video-renderer'
+			'ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer, ytd-compact-video-renderer, ytd-reel-item-renderer'
 		);
 
 		videos.forEach(item => {
-			const channelLink = item.querySelector('.yt-core-attributed-string__link');
-			if (!channelLink || item.querySelector('.yt-hwv-block-btn')) return;
+			// MISE A JOUR : Recherche du lien de chaine compatible avec le code fourni (yt-content-metadata-view-model) et l'ancien (ytd-channel-name)
+			const channelLink = item.querySelector('ytd-channel-name a, yt-content-metadata-view-model .yt-core-attributed-string__link');
+
+			// Si pas de lien trouvé ou si le bouton existe déjà juste à côté, on arrête
+			if (!channelLink || channelLink.parentNode.querySelector('.yt-hwv-block-btn')) return;
 
 			const rawChannelName = channelLink.textContent.trim();
 			const parsedChannelNames = getChannelNamesFromString(rawChannelName);
@@ -826,10 +827,13 @@ const REGEX_USER = /.*\/@.*/u;
 			const btn = document.createElement('span');
 			btn.className = 'yt-hwv-block-btn';
 			btn.style.cursor = 'pointer';
-			btn.style.fontSize = '11px';
-			btn.style.marginRight = '4px';
+			btn.style.fontSize = '12px'; // Légèrement plus grand pour être visible
+			btn.style.marginRight = '5px';
+			btn.style.color = 'var(--yt-spec-text-primary)'; // Couleur adaptative
 			btn.style.opacity = '0.5';
 			btn.style.userSelect = 'none';
+			btn.style.position = 'relative';
+			btn.style.zIndex = '1'; // S'assure que le bouton est au dessus des zones cliquables fantomes
 
 			const updateBtnIcon = () => {
 				const current = getBlockedChannels();
@@ -838,12 +842,16 @@ const REGEX_USER = /.*\/@.*/u;
 				btn.title = isBlocked
 					? `Débloquer la chaîne "${primaryChannelName}"`
 					: `Bloquer la chaîne "${primaryChannelName}"`;
+				btn.style.opacity = isBlocked ? '1' : '0.5';
 			};
 
 			updateBtnIcon();
 
 			btn.addEventListener('mouseenter', () => btn.style.opacity = '1');
-			btn.addEventListener('mouseleave', () => btn.style.opacity = '0.5');
+			btn.addEventListener('mouseleave', () => {
+				const isBlocked = getBlockedChannels().includes(primaryChannelName);
+				if (!isBlocked) btn.style.opacity = '0.5';
+			});
 
 			btn.addEventListener('click', (e) => {
 				e.preventDefault();
@@ -865,7 +873,7 @@ const REGEX_USER = /.*\/@.*/u;
 				updateBtnIcon();
 			});
 
-			// Insertion AVANT le nom de la chaîne
+			// Insertion AVANT le lien de la chaîne (<a>)
 			channelLink.parentNode.insertBefore(btn, channelLink);
 		});
 	};
