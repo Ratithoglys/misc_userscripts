@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube: Hide Watched Videos extended
 // @namespace    https://ebumna.net/
-// @version      6.13h
+// @version      6.14a
 // @license      MIT
 // @description  Hides watched videos from extension. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Ev Haus
@@ -777,12 +777,24 @@ const REGEX_USER = /.*\/@.*/u;
 			return;
 		}
 
-		// Sélecteur général pour toutes les vidéos
-		const videoItems = document.querySelectorAll('ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer, ytd-compact-video-renderer, ytd-reel-item-renderer');
+		// Sélecteur général pour toutes les vidéos ET l'en-tête de chaîne (nouveau)
+		const videoItems = document.querySelectorAll([
+            'ytd-rich-item-renderer',
+            'ytd-video-renderer',
+            'ytd-grid-video-renderer',
+            'ytd-compact-video-renderer',
+            'ytd-reel-item-renderer',
+            'yt-page-header-renderer' // <--- Nouveau format en-tête
+        ].join(','));
 
 		videoItems.forEach(item => {
-			// MISE A JOUR : On cherche soit l'ancien format (ytd-channel-name a), soit le nouveau format (yt-content-metadata... a)
-			const channelLink = item.querySelector('ytd-channel-name a, yt-content-metadata-view-model .yt-core-attributed-string__link');
+			// 1. Recherche standard pour les vidéos
+			let channelLink = item.querySelector('ytd-channel-name a, yt-content-metadata-view-model .yt-core-attributed-string__link');
+
+            // 2. Recherche spécifique pour le nouvel en-tête de chaîne
+            if (!channelLink && item.tagName.toLowerCase() === 'yt-page-header-renderer') {
+                channelLink = item.querySelector('yt-dynamic-text-view-model h1');
+            }
 
 			if (channelLink) {
 				const rawChannelName = channelLink.textContent.trim();
@@ -803,34 +815,60 @@ const REGEX_USER = /.*\/@.*/u;
 	};
 
 	const injectBlockChannelButtons = () => {
-		const videos = document.querySelectorAll(
-			'ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer, ytd-compact-video-renderer, ytd-reel-item-renderer'
+		// CORRECTION 6.16: Ajout de yt-page-header-renderer
+		const elements = document.querySelectorAll(
+			[
+                'ytd-rich-item-renderer',
+                'ytd-video-renderer',
+                'ytd-grid-video-renderer',
+                'ytd-compact-video-renderer',
+                'ytd-reel-item-renderer',
+                'ytd-c4-tabbed-header-renderer',
+                'ytd-channel-header-renderer',
+                'yt-page-header-renderer' // <--- Le conteneur fourni dans votre HTML
+            ].join(',')
 		);
 
-		videos.forEach(item => {
-			// MISE A JOUR : Recherche du lien de chaine compatible avec le code fourni (yt-content-metadata-view-model) et l'ancien (ytd-channel-name)
-			const channelLink = item.querySelector('ytd-channel-name a, yt-content-metadata-view-model .yt-core-attributed-string__link');
+		elements.forEach(item => {
+			let targetEl = null;
 
-			// Si pas de lien trouvé ou si le bouton existe déjà juste à côté, on arrête
-			if (!channelLink || channelLink.parentNode.querySelector('.yt-hwv-block-btn')) return;
+            // Cas 1 : Vidéos Standards
+			const channelNameEl = item.querySelector('ytd-channel-name, yt-content-metadata-view-model');
+            if (channelNameEl) {
+                 targetEl = channelNameEl.querySelector('a, .yt-core-attributed-string__link, yt-formatted-string, #text');
+            }
 
-			const rawChannelName = channelLink.textContent.trim();
+            // Cas 2 : Nouvel En-tête de chaîne (Votre cas spécifique)
+            // On cherche le H1 dans le View Model
+            if (item.tagName.toLowerCase() === 'yt-page-header-renderer') {
+                const titleH1 = item.querySelector('yt-dynamic-text-view-model h1');
+                if (titleH1) {
+                    targetEl = titleH1; // On insérera DANS le h1, au début
+                }
+            }
+
+			// Si rien trouvé ou si le bouton existe déjà, on arrête
+            // Note: Pour le H1, on vérifie si le bouton est DANS le H1
+			if (!targetEl || (targetEl.querySelector && targetEl.querySelector('.yt-hwv-block-btn')) || targetEl.parentNode.querySelector('.yt-hwv-block-btn')) return;
+
+			// 3. Récupération du nom
+			const rawChannelName = targetEl.textContent.trim();
 			const parsedChannelNames = getChannelNamesFromString(rawChannelName);
-
-			// On agit sur la première chaîne de la liste
 			const primaryChannelName = parsedChannelNames[0];
-			if (!primaryChannelName) return; // Sécurité
 
+			if (!primaryChannelName) return;
+
+			// 4. Création du bouton
 			const btn = document.createElement('span');
 			btn.className = 'yt-hwv-block-btn';
 			btn.style.cursor = 'pointer';
-			btn.style.fontSize = '12px'; // Légèrement plus grand pour être visible
-			btn.style.marginRight = '5px';
-			btn.style.color = 'var(--yt-spec-text-primary)'; // Couleur adaptative
+			btn.style.fontSize = '14px'; // Un peu plus grand pour le titre
+			btn.style.marginRight = '8px';
+			btn.style.color = 'var(--yt-spec-text-primary)';
 			btn.style.opacity = '0.5';
 			btn.style.userSelect = 'none';
 			btn.style.position = 'relative';
-			btn.style.zIndex = '1'; // S'assure que le bouton est au dessus des zones cliquables fantomes
+			btn.style.zIndex = '1';
 
 			const updateBtnIcon = () => {
 				const current = getBlockedChannels();
@@ -856,22 +894,26 @@ const REGEX_USER = /.*\/@.*/u;
 
 				const current = getBlockedChannels();
 				if (current.includes(primaryChannelName)) {
-					// Retirer de la liste
 					const index = current.indexOf(primaryChannelName);
 					current.splice(index, 1);
 				} else {
-					// Ajouter à la liste
 					current.push(primaryChannelName);
 				}
 
 				gmc.set('BLOCKED_CHANNELS_LIST', current.join('\n'));
-				gmc.save(); // La sauvegarde déclenchera run() qui mettra tout à jour
+				gmc.save();
 				updateClassOnBlockedChannelItems();
 				updateBtnIcon();
 			});
 
-			// Insertion AVANT le lien de la chaîne (<a>)
-			channelLink.parentNode.insertBefore(btn, channelLink);
+			// 5. Insertion
+            if (targetEl.tagName === 'H1') {
+                // Cas spécial H1 : on insère au tout début du contenu du H1
+                targetEl.insertBefore(btn, targetEl.firstChild);
+            } else {
+                // Cas standard : avant l'élément
+                targetEl.parentNode.insertBefore(btn, targetEl);
+            }
 		});
 	};
 
