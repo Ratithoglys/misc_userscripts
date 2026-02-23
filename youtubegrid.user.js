@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Grid Customizer
 // @namespace    http://tampermonkey.net/
-// @version      0.4
+// @version      0.5
 // @description  Customize the number of items per row on the YouTube subscriptions page.
 // @author       Lénaïc JAOUEN
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
@@ -13,6 +13,10 @@
 
 (function() {
     'use strict';
+
+    if (/music\.youtube\.com\//.test(document.baseURI)) {
+        return;
+    }
 
     // --- Configuration (Change these to your preferences) ---
     const defaultItemsPerRow = 8;  // Default number of items per row

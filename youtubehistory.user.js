@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube: Hide Watched Videos extended
 // @namespace    https://ebumna.net/
-// @version      6.14a
+// @version      6.14b
 // @license      MIT
 // @description  Hides watched videos from extension. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Ev Haus
@@ -28,6 +28,11 @@
 
 const REGEX_CHANNEL = /.*\/(user|channel|c)\/.+\/videos/u;
 const REGEX_USER = /.*\/@.*/u;
+
+
+if (/music\.youtube\.com\//.test(document.baseURI)) {
+	return;
+}
 
 ((_undefined) => {
 	// Enable for debugging
