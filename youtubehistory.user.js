@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         YouTube: Hide Watched Videos extended
+// @name         YouTube: Hide Watched Videos extended - Ebumna
 // @namespace    https://ebumna.net/
-// @version      6.16
+// @version      6.16c
 // @license      MIT
-// @description  Hides watched videos from extension. Basé sur https://github.com/EvHaus/youtube-hide-watched
+// @description  Hides watched videos from extension. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Ev Haus
 // @author       netjeff
 // @author       actionless
@@ -29,7 +29,6 @@
 const REGEX_CHANNEL = /.*\/(user|channel|c)\/.+\/videos/u;
 const REGEX_USER = /.*\/@.*/u;
 
-
 if (/music\.youtube\.com\//.test(document.baseURI)) {
 	return;
 }
@@ -39,7 +38,6 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 	const DEBUG = false;
 
 	// Needed to bypass YouTube's Trusted Types restrictions, ie.
-	// Uncaught TypeError: Failed to set the 'innerHTML' property on 'Element': This document requires 'TrustedHTML' assignment.
 	if (
 		typeof trustedTypes !== 'undefined' &&
 		trustedTypes.defaultPolicy === null
@@ -75,8 +73,6 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 			BLOCKED_CHANNELS_LIST: {
 				label: 'Blocked Channels (one per line)',
 				type: 'textarea',
-				cols: 150,
-				rows: 10,
 				default: '',
 			},
 		},
@@ -91,40 +87,6 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		if (DEBUG) console.debug('[YT-HWV]', msgs);
 	};
 
-	// Storage helpers — prefer GM storage (persists across YouTube's
-	// localStorage clears) but fall back to localStorage if GM APIs
-	// are unavailable.
-	const stateGet = async (key, defaultValue) => {
-		try {
-			return GM_getValue(key, defaultValue);
-		} catch (_) {
-			/* fall through */
-		}
-		try {
-			return await GM.getValue(key, defaultValue);
-		} catch (_) {
-			/* fall through */
-		}
-		return localStorage.getItem(key) ?? defaultValue;
-	};
-	const stateSet = async (key, value) => {
-		try {
-			GM_setValue(key, value);
-			return;
-		} catch (_) {
-			/* fall through */
-		}
-		try {
-			await GM.setValue(key, value);
-			return;
-		} catch (_) {
-			/* fall through */
-		}
-		localStorage.setItem(key, value);
-	};
-
-	// GreaseMonkey no longer supports GM_addStyle. So we have to define
-	// our own polyfill here
 	const addStyle = (aCss) => {
 		const head = document.getElementsByTagName('head')[0];
 		if (head) {
@@ -136,8 +98,15 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		}
 		return null;
 	};
+    
+    // add to queue / watch later
+    addStyle(`
+.ytThumbnailHoverOverlayToggleActionsViewModelHost { top:0; }
+`);
 
 	addStyle(`
+.ytThumbnailHoverOverlayToggleActionsViewModelHost { top:0; }
+
 .YT-HWV-WATCHED-HIDDEN { display: none !important }
 
 .YT-HWV-WATCHED-DIMMED { opacity: 0.3 }
@@ -292,9 +261,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		const watched = document.querySelectorAll(
 			[
 				'.ytd-thumbnail-overlay-resume-playback-renderer',
-				// Recommended videos on the right-hand sidebar when watching a video
 				'.ytThumbnailOverlayProgressBarHostWatchedProgressBarSegment',
-				// 2025-02-01 Update
 				'.ytThumbnailOverlayProgressBarHostWatchedProgressBarSegmentModern',
 			].join(','),
 		);
@@ -437,8 +404,6 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 			youtubeSection = 'playlist';
 		} else if (href.includes('/results?')) {
 			youtubeSection = 'search';
-		} else if (href.includes('/hashtag/')) {
-			youtubeSection = 'hashtag';
 		}
 
 		return youtubeSection;
@@ -446,7 +411,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 	// ===========================================================
 
-	const updateClassOnWatchedItems = async () => {
+	const updateClassOnWatchedItems = () => {
 		// Remove existing classes
 		document.querySelectorAll('.YT-HWV-WATCHED-DIMMED').forEach((el) => {
 			el.classList.remove('YT-HWV-WATCHED-DIMMED');
@@ -460,7 +425,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		if (window.location.href.indexOf('/feed/history') >= 0) return;
 
 		const section = determineYoutubeSection();
-		const state = await stateGet(`YTHWV_STATE_${section}`);
+		const state = localStorage[`YTHWV_STATE_${section}`];
 
 		findWatchedElements().forEach((item, _i) => {
 			let watchedItem;
@@ -540,7 +505,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 	// ===========================================================
 
-	const updateClassOnHistoryItems = async () => {
+	const updateClassOnHistoryItems = () => {
 
 		// Remove existing classes
 		document
@@ -555,7 +520,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		if (window.location.href.indexOf('/feed/history') >= 0) return;
 
 		const section = determineYoutubeSection();
-		const state = await stateGet(`YTHWV_STATE_HISTORY_${section}`);
+		const state = localStorage[`YTHWV_STATE_HISTORY_${section}`];
 
 
 		findHistoryElements().forEach((item, _i) => {
@@ -636,7 +601,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 	// ===========================================================
 
-	const updateClassOnShortsItems = async () => {
+	const updateClassOnShortsItems = () => {
 		const section = determineYoutubeSection();
 
 		document.querySelectorAll('.YT-HWV-SHORTS-DIMMED').forEach((el) => {
@@ -646,7 +611,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 			el.classList.remove('YT-HWV-SHORTS-HIDDEN');
 		});
 
-		const state = await stateGet(`YTHWV_STATE_SHORTS_${section}`);
+		const state = localStorage[`YTHWV_STATE_SHORTS_${section}`];
 
 		const shortsContainers = findShortsContainers();
 
@@ -662,7 +627,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 	// ===========================================================
 
-	const updateClassOnUpcomingItems = async () => {
+	const updateClassOnUpcomingItems = () => {
 		// Remove existing classes
 		document
 			.querySelectorAll('.YT-HWV-UPCOMING-DIMMED')
@@ -676,7 +641,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		if (window.location.href.indexOf('/feed/history') >= 0) return;
 
 		const section = determineYoutubeSection();
-		const state = await stateGet(`YTHWV_STATE_UPCOMING_${section}`);
+		const state = localStorage[`YTHWV_STATE_UPCOMING_${section}`];
 
 
 		findUpcomingElements().forEach((item, _i) => {
@@ -757,7 +722,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 	// ===========================================================
 
-	const updateClassOnMixesItems = async () => {
+	const updateClassOnMixesItems = () => {
 		const section = determineYoutubeSection();
 
 		document
@@ -767,7 +732,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 			.querySelectorAll('.YT-HWV-MIXES-HIDDEN')
 			.forEach((el) => el.classList.remove('YT-HWV-MIXES-HIDDEN'));
 
-		const state = await stateGet(`YTHWV_STATE_MIXES_${section}`);
+		const state = localStorage[`YTHWV_STATE_MIXES_${section}`];
 
 		const mixesItems = findMixesElements();
 
@@ -783,12 +748,12 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 	// ===========================================================
 
-	const getBlockedChannels = async () => {
+	const getBlockedChannels = () => {
 		const list = gmc.get('BLOCKED_CHANNELS_LIST') || '';
 		return list.split('\n').map(c => c.trim()).filter(c => c.length > 0);
 	};
 
-	const getChannelNamesFromString = async (rawString) => {
+	const getChannelNamesFromString = (rawString) => {
 		if (!rawString) return [];
 		// Sépare la chaîne par " and "
 		const potentialNames = rawString.split(/\s+and\s+/i);
@@ -798,7 +763,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 			.filter(name => !/^\d+\s+more$/i.test(name)); // Exclut les "3 more", etc.
 	};
 
-    const updateClassOnBlockedChannelItems = async () => {
+    const updateClassOnBlockedChannelItems = () => {
 		// Do nothing if empty list
 		const BLOCKED_CHANNELS = getBlockedChannels();
 		if (!BLOCKED_CHANNELS || BLOCKED_CHANNELS.length === 0) return;
@@ -816,7 +781,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		if (window.location.href.indexOf('/feed/history') >= 0) return;
 
 		const section = determineYoutubeSection();
-		const state = await stateGet(`YTHWV_STATE_BLOCKED_CHANNELS_${section}`);
+		const state = localStorage[`YTHWV_STATE_BLOCKED_CHANNELS_${section}`];
 
 		// Si l'état est "normal", on ne fait rien
 		if (state === 'normal' || !state) {
@@ -860,7 +825,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		});
 	};
 
-	const injectBlockChannelButtons = async () => {
+	const injectBlockChannelButtons = () => {
 		// CORRECTION 6.16: Ajout de yt-page-header-renderer
 		const elements = document.querySelectorAll(
 			[
@@ -965,7 +930,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 	// ===========================================================
 
-	const removeHiddenElements = async () => {
+	const removeHiddenElements = () => {
 		const hiddenSelectors = [
 			'.YT-HWV-WATCHED-HIDDEN',
 			'.YT-HWV-HISTORY-HIDDEN',
@@ -984,7 +949,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 	// ===========================================================
 
-	const renderButtons = async () => {
+	const renderButtons = () => {
 		// Find button area target
 		const target = findButtonAreaTarget();
 		if (!target) return;
@@ -997,13 +962,11 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		buttonArea.classList.add('YT-HWV-BUTTONS');
 
 		// Render buttons
-		for (const { icon, iconHidden, name, stateKey, type } of BUTTONS) {
-			// For toggle buttons, determine where in GM storage they track state
+		BUTTONS.forEach(({ icon, iconHidden, name, stateKey, type }) => {
+			// For toggle buttons, determine where in localStorage they track state
 			const section = determineYoutubeSection();
-			const storageKey = stateKey ? [stateKey, section].join('_') : null;
-			const toggleButtonState = storageKey
-				? await stateGet(storageKey, 'normal')
-				: 'normal';
+			const storageKey = [stateKey, section].join('_');
+			const toggleButtonState = localStorage.getItem(storageKey) || 'normal';
 
 			// Generate button DOM
 			const button = document.createElement('button');
@@ -1020,7 +983,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 			// Attach events for toggle buttons
 			switch (type) {
 				case 'toggle':
-					button.addEventListener('click', async () => {
+					button.addEventListener('click', () => {
 						logDebug(`Button ${name} clicked. State: ${toggleButtonState}`);
 
 						let newState = 'dimmed';
@@ -1030,15 +993,15 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 							newState = 'normal';
 						}
 
-						await stateSet(storageKey, newState);
+						localStorage.setItem(storageKey, newState);
 
-						await updateClassOnWatchedItems();
-						await updateClassOnHistoryItems();
-						await updateClassOnShortsItems();
-						await updateClassOnUpcomingItems();
-						await updateClassOnMixesItems();
-						await updateClassOnBlockedChannelItems();
-						await renderButtons();
+						updateClassOnWatchedItems();
+						updateClassOnHistoryItems();
+						updateClassOnShortsItems();
+						updateClassOnUpcomingItems();
+						updateClassOnMixesItems();
+						updateClassOnBlockedChannelItems();
+						renderButtons();
 					});
 					break;
 				case 'action':
@@ -1048,13 +1011,13 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 					});
 					break;
 				case 'settings':
-					button.addEventListener('click', async () => {
+					button.addEventListener('click', () => {
 						gmc.open();
-						await renderButtons();
+						renderButtons();
 					});
 					break;
 			}
-		}
+		});
 
 		// Insert buttons into DOM
 		if (existingButtons) {
@@ -1066,7 +1029,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		}
 	};
 
-	const run = debounce(async (mutations) => {
+	const run = debounce((mutations) => {
 		// Don't react if only our own buttons changed state
 		// to avoid running an endless loop
 		if (
@@ -1079,14 +1042,14 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		}
 
 		logDebug('Running check for watched videos, and shorts');
-		await updateClassOnWatchedItems();
-		await updateClassOnHistoryItems();
-		await updateClassOnShortsItems();
-		await updateClassOnUpcomingItems();
-		await updateClassOnMixesItems();
-		await updateClassOnBlockedChannelItems();
-		await injectBlockChannelButtons();
-		await renderButtons();
+		updateClassOnWatchedItems();
+		updateClassOnHistoryItems();
+		updateClassOnShortsItems();
+		updateClassOnUpcomingItems();
+		updateClassOnMixesItems();
+		updateClassOnBlockedChannelItems();
+		injectBlockChannelButtons();
+		renderButtons();
 	}, 250);
 
 	// ===========================================================
