@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube: Hide Watched Videos extended - Ebumna
 // @namespace    https://ebumna.net/
-// @version      6.16c
+// @version      6.16d
 // @license      MIT
 // @description  Hides watched videos from extension. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Ev Haus
@@ -98,7 +98,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		}
 		return null;
 	};
-    
+
     // add to queue / watch later
     addStyle(`
 .ytThumbnailHoverOverlayToggleActionsViewModelHost { top:0; }
@@ -108,14 +108,12 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 .ytThumbnailHoverOverlayToggleActionsViewModelHost { top:0; }
 
 .YT-HWV-WATCHED-HIDDEN { display: none !important }
-
 .YT-HWV-WATCHED-DIMMED { opacity: 0.3 }
 
 .YT-HWV-HISTORY-HIDDEN { display: none !important }
 .YT-HWV-HISTORY-DIMMED { background-color: rgba(255,255,0,0.2); opacity: 0.3 }
 
 .YT-HWV-SHORTS-HIDDEN { display: none !important }
-
 .YT-HWV-SHORTS-DIMMED { opacity: 0.3 }
 
 .YT-HWV-UPCOMING-HIDDEN { display: none !important }
@@ -124,14 +122,17 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 .YT-HWV-MIXES-HIDDEN { display: none !important }
 .YT-HWV-MIXES-DIMMED { opacity: 0.3 }
 
+.YT-HWV-MEMBERS-ONLY-HIDDEN { display: none !important }
+.YT-HWV-MEMBERS-ONLY-DIMMED { background-color: rgba(255,215,0,0.2); opacity: 0.3 }
+
 .YT-HWV-BLOCKED-CHANNEL-HIDDEN { display: none !important }
 .YT-HWV-BLOCKED-CHANNEL-DIMMED { background-color: rgba(200,0,255,0.2); opacity: 0.3 }
 
 .YT-HWV-HIDDEN-ROW-PARENT { padding-bottom: 10px }
 
 .YT-HWV-BUTTONS {
-	background: transparent;
-	border: 1px solid var(--ytd-searchbox-legacy-border-color);
+	background: #272727 !important;
+	border: 1px solid rgba(255, 255, 255, 0.2) !important;
     border-radius: 40px;
     display: flex;
     gap: 5px;
@@ -140,10 +141,10 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 .YT-HWV-BUTTON {
 	align-items: center;
-	background: transparent;
+	background: transparent !important;
 	border: 0;
     border-radius: 40px;
-	color: var(--yt-spec-text-primary);
+	color: #f1f1f1 !important;
 	cursor: pointer;
     display: flex;
 	height: 40px;
@@ -154,10 +155,10 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 .YT-HWV-BUTTON:focus,
 .YT-HWV-BUTTON:hover {
-	background: var(--yt-spec-additive-background);
+	background: rgba(255, 255, 255, 0.15) !important;
 }
 
-.YT-HWV-BUTTON-DISABLED { color: var(--yt-spec-text-disabled) }
+.YT-HWV-BUTTON-DISABLED { color: rgba(255, 255, 255, 0.3) !important }
 
 .YT-HWV-MENU {
 	background: #F8F8F8;
@@ -188,23 +189,23 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 			stateKey: 'YTHWV_STATE',
 			type: 'toggle',
 		},
-		{
-			icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><path fill="currentColor" d="M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4zm0 36c-8.84 0-16-7.16-16-16s7.16-16 16-16 16 7.16 16 16-7.16 16-16 16zm1-28v14l8 4.62-2 3.46-10-5.77V12h4z"/></svg>',
+		{ // HISTORY
+			icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M8.76 1.487a11 11 0 11-7.54 12.706 1 1 0 011.96-.4 9 9 0 0014.254 5.38A9 9 0 0016.79 4.38 9 9 0 004.518 7H7a1 1 0 010 2H1V3a1 1 0 012 0v2.678a11 11 0 015.76-4.192ZM12 6a1 1 0 00-1 1v5.58l.504.288 3.5 2a1 1 0 10.992-1.736L13 11.42V7a1 1 0 00-1-1Z"/></svg>',
 			iconHidden:
-				'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><path fill="currentColor" d="M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4zm0 36c-8.84 0-16-7.16-16-16s7.16-16 16-16 16 7.16 16 16-7.16 16-16 16zm1-28v14l8 4.62-2 3.46-10-5.77V12h4z"/><path fill="currentColor" d="m7.501 5.55 4.066-2.42 24.26 40.78-4.065 2.418z"/></svg>',
+				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M8.76 1.487a11 11 0 11-7.54 12.706 1 1 0 011.96-.4 9 9 0 0014.254 5.38A9 9 0 0016.79 4.38 9 9 0 004.518 7H7a1 1 0 010 2H1V3a1 1 0 012 0v2.678a11 11 0 015.76-4.192ZM12 6a1 1 0 00-1 1v5.58l.504.288 3.5 2a1 1 0 10.992-1.736L13 11.42V7a1 1 0 00-1-1Z"/><path fill="currentColor" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
 			name: 'Toggle History Videos',
 			stateKey: 'YTHWV_STATE_HISTORY',
 			type: 'toggle',
 		},
-		{
-			icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><path fill="currentColor" d="M31.95 3c-1.11 0-2.25.3-3.27.93l-15.93 9.45C10.32 14.79 8.88 17.67 9 20.7c.15 3 1.74 5.61 4.17 6.84.06.03 2.25 1.05 2.25 1.05l-2.7 1.59c-3.42 2.04-4.74 6.81-2.94 10.65C11.07 43.47 13.5 45 16.05 45c1.11 0 2.22-.3 3.27-.93l15.93-9.45c2.4-1.44 3.87-4.29 3.72-7.35-.12-2.97-1.74-5.61-4.17-6.81-.06-.03-2.25-1.05-2.25-1.05l2.7-1.59c3.42-2.04 4.74-6.81 2.91-10.65C36.93 4.53 34.47 3 31.95 3z"/></svg>',
+		{ // SHORTS
+			icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="m13.467 1.19-8 4.7a5 5 0 00-.255 8.46 5 5 0 005.32 8.462l8-4.7a5 5 0 00.258-8.462 5 5 0 001.641-6.464l-.12-.217a5 5 0 00-6.844-1.78m5.12 2.79a2.999 2.999 0 01-1.067 4.107l-1.327.78a1 1 0 00.096 1.775l.943.423a3 3 0 01.288 5.323l-8 4.7a3 3 0 01-3.039-5.173l1.327-.78a1 1 0 00-.097-1.775l-.942-.423a3 3 0 01-.288-5.323l8-4.7a3 3 0 014.106 1.066ZM15 12l-5-3v6l5-3Z"/></svg>',
 			iconHidden:
-				'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><g fill="currentColor"><g clip-path="url(#slashGap)"><path d="M31.97 3c-1.11 0-2.25.3-3.27.93l-15.93 9.45c-2.43 1.41-3.87 4.29-3.75 7.32.15 3 1.74 5.61 4.17 6.84.06.03 2.25 1.05 2.25 1.05l-2.7 1.59C9.32 32.22 8 36.99 9.8 40.83c1.29 2.64 3.72 4.17 6.27 4.17 1.11 0 2.22-.3 3.27-.93l15.93-9.45c2.4-1.44 3.87-4.29 3.72-7.35-.12-2.97-1.74-5.61-4.17-6.81-.06-.03-2.25-1.05-2.25-1.05l2.7-1.59c3.42-2.04 4.74-6.81 2.91-10.65C36.95 4.53 34.49 3 31.97 3z"/></g><path d="m7.501 5.55 4.066-2.42 24.26 40.78-4.065 2.418z"/></g></svg>',
+				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="m13.467 1.19-8 4.7a5 5 0 00-.255 8.46 5 5 0 005.32 8.462l8-4.7a5 5 0 00.258-8.462 5 5 0 001.641-6.464l-.12-.217a5 5 0 00-6.844-1.78m5.12 2.79a2.999 2.999 0 01-1.067 4.107l-1.327.78a1 1 0 00.096 1.775l.943.423a3 3 0 01.288 5.323l-8 4.7a3 3 0 01-3.039-5.173l1.327-.78a1 1 0 00-.097-1.775l-.942-.423a3 3 0 01-.288-5.323l8-4.7a3 3 0 014.106 1.066ZM15 12l-5-3v6l5-3Z"/><path fill="currentColor" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
 			name: 'Toggle Shorts',
 			stateKey: 'YTHWV_STATE_SHORTS',
 			type: 'toggle',
 		},
-		{
+		{ // UPCOMING
 			icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6c-6 0-10 4-10 10v7l-3 6h26l-3-6v-7c0-6-4-10-10-10z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="24" cy="39" r="3" fill="currentColor"/></svg>',
 			iconHidden:
 				'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6c-6 0-10 4-10 10v7l-3 6h26l-3-6v-7c0-6-4-10-10-10z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="24" cy="39" r="3" fill="currentColor"/><path fill="currentColor" d="m7.501 5.55 4.066-2.42 24.26 40.78-4.065 2.418z"/></svg>',
@@ -212,27 +213,36 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 			stateKey: 'YTHWV_STATE_UPCOMING',
 			type: 'toggle',
 		},
-		{
-            icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>',
+		{ // MUSIC / MIXES
+            icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M11 2.766v10.99a4.5 4.5 0 101.994 3.976L13 17.5V9.2l5.485 3.292A1 1 0 0020 11.634V6.966a1 1 0 00-.485-.857l-7-4.2A1 1 0 0011 2.766Zm2 4.102V4.533l5 3v2.335l-5-3ZM8.5 15a2.5 2.5 0 110 5.001A2.5 2.5 0 018.5 15Z"/></svg>',
 			iconHidden:
-				'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M4.27 3L3 4.27l9 9v.28c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4v-1.73L19.73 21 21 19.73 4.27 3zM14 7h4V3h-6v5.18l2 2z"/></svg>',			name: 'Toggle Mixes',
+				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M11 2.766v10.99a4.5 4.5 0 101.994 3.976L13 17.5V9.2l5.485 3.292A1 1 0 0020 11.634V6.966a1 1 0 00-.485-.857l-7-4.2A1 1 0 0011 2.766Zm2 4.102V4.533l5 3v2.335l-5-3ZM8.5 15a2.5 2.5 0 110 5.001A2.5 2.5 0 018.5 15Z"/><path fill="currentColor" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
+			name: 'Toggle Mixes',
 			stateKey: 'YTHWV_STATE_MIXES',
 			type: 'toggle',
 		},
-		{
-			icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M24,6 38,18 24,42 10,18Z M24,19a5,5 0 1 1 0,10a5,5 0 0 1 0-10Z"/></svg>',
+        { // MEMBERS ONLY
+            icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 13c-1 1-2.5 1.5-4 1.5-2.5 0-4.5-1.5-5-4h-1.5v-1h1.2c-.1-.3-.2-.6-.2-1s.1-.7.2-1h-1.2v-1h1.5c.5-2.5 2.5-4 5-4 1.5 0 3 .5 4 1.5l-1.5 1.5c-.5-.5-1.5-1-2.5-1-1.5 0-2.5 1-3 2.5h4v1h-4.3c0 .3-.1.6-.1 1s0 .7.1 1h4.3v1h-4c.5 1.5 1.5 2.5 3 2.5.5 0 1.5-.5 2-1z" /></svg>',
+            iconHidden:
+                '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 13c-1 1-2.5 1.5-4 1.5-2.5 0-4.5-1.5-5-4h-1.5v-1h1.2c-.1-.3-.2-.6-.2-1s.1-.7.2-1h-1.2v-1h1.5c.5-2.5 2.5-4 5-4 1.5 0 3 .5 4 1.5l-1.5 1.5c-.5-.5-1.5-1-2.5-1-1.5 0-2.5 1-3 2.5h4v1h-4.3c0 .3-.1.6-.1 1s0 .7.1 1h4.3v1h-4c.5 1.5 1.5 2.5 3 2.5.5 0 1.5-.5 2-1z" /><path fill="currentColor" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
+            name: 'Toggle Members Only / Paid',
+            stateKey: 'YTHWV_STATE_MEMBERS_ONLY',
+            type: 'toggle',
+        },
+		{ // CHANNELS
+			icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM7.07 18.28c.43-.9 3.05-1.78 4.93-1.78s4.5.88 4.93 1.78C15.57 19.36 13.86 20 12 20s-3.57-.64-4.93-1.72zm11.29-1.45c-1.43-1.74-4.9-2.33-6.36-2.33s-4.93.59-6.36 2.33C4.62 15.49 4 13.82 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8c0 1.82-.62 3.49-1.64 4.83zM12 6c-1.94 0-3.5 1.56-3.5 3.5S10.06 13 12 13s3.5-1.56 3.5-3.5S13.94 6 12 6zm0 6c-.83 0-1.5-.67-1.5-1.5S11.17 9 12 9s1.5.67 1.5 1.5S12.83 12 12 12z"></path></svg>',
 			iconHidden:
-				'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M24,6 38,18 24,42 10,18Z M24,19a5,5 0 1 1 0,10a5,5 0 0 1 0-10Z"/><path fill="currentColor" d="m7.501 5.55 4.066-2.42 24.26 40.78-4.065 2.418z"/></svg>',
+				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM7.07 18.28c.43-.9 3.05-1.78 4.93-1.78s4.5.88 4.93 1.78C15.57 19.36 13.86 20 12 20s-3.57-.64-4.93-1.72zm11.29-1.45c-1.43-1.74-4.9-2.33-6.36-2.33s-4.93.59-6.36 2.33C4.62 15.49 4 13.82 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8c0 1.82-.62 3.49-1.64 4.83zM12 6c-1.94 0-3.5 1.56-3.5 3.5S10.06 13 12 13s3.5-1.56 3.5-3.5S13.94 6 12 6zm0 6c-.83 0-1.5-.67-1.5-1.5S11.17 9 12 9s1.5.67 1.5 1.5S12.83 12 12 12z"/><path fill="currentColor" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
 			name: 'Toggle Channels',
 			stateKey: 'YTHWV_STATE_BLOCKED_CHANNELS',
 			type: 'toggle',
 		},
-		{
+		{ // SETTINGS
 			icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path fill="currentColor" d="M12 9.5a2.5 2.5 0 0 1 0 5 2.5 2.5 0 0 1 0-5m0-1c-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5 3.5-1.57 3.5-3.5-1.57-3.5-3.5-3.5zM13.22 3l.55 2.2.13.51.5.18c.61.23 1.19.56 1.72.98l.4.32.5-.14 2.17-.62 1.22 2.11-1.63 1.59-.37.36.08.51c.05.32.08.64.08.98s-.03.66-.08.98l-.08.51.37.36 1.63 1.59-1.22 2.11-2.17-.62-.5-.14-.4.32c-.53.43-1.11.76-1.72.98l-.5.18-.13.51-.55 2.24h-2.44l-.55-2.2-.13-.51-.5-.18c-.6-.23-1.18-.56-1.72-.99l-.4-.32-.5.14-2.17.62-1.21-2.12 1.63-1.59.37-.36-.08-.51c-.05-.32-.08-.65-.08-.98s.03-.66.08-.98l.08-.51-.37-.36L3.6 8.56l1.22-2.11 2.17.62.5.14.4-.32c.53-.44 1.11-.77 1.72-.99l.5-.18.13-.51.54-2.21h2.44M14 2h-4l-.74 2.96c-.73.27-1.4.66-2 1.14l-2.92-.83-2 3.46 2.19 2.13c-.06.37-.09.75-.09 1.14s.03.77.09 1.14l-2.19 2.13 2 3.46 2.92-.83c.6.48 1.27.87 2 1.14L10 22h4l.74-2.96c.73-.27 1.4-.66 2-1.14l2.92.83 2-3.46-2.19-2.13c.06-.37.09-.75.09-1.14s-.03-.77-.09-1.14l2.19-2.13-2-3.46-2.92.83c-.6-.48-1.27-.87-2-1.14L14 2z"/></svg>',
 			name: 'Settings',
 			type: 'settings',
 		},
-		{
+		{ // REMOVE HIDDEN
 			icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>',
 			name: 'Remove hidden items from DOM',
 			type: 'action',
@@ -352,7 +362,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 		const upcoming = Array.from(
 			document.querySelectorAll(
-				'div.yt-badge-shape__text:not(:empty)'
+				'div.yt-badge-shape__text:not(:empty), div.ytBadgeShapeText:not(:empty)'
 			)).filter(e => e.textContent.trim() === 'Upcoming')
 
 		logDebug(
@@ -365,11 +375,29 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 	// ===========================================================
 
 	const findMixesElements = () => {
-		const icons = document.querySelectorAll('ytd-rich-item-renderer yt-thumbnail-overlay-badge-view-model .yt-badge-shape__icon');
-		const mixes = [];
-		icons.forEach(icon => {
-			const container = icon.closest('ytd-rich-item-renderer');
-			if (container) mixes.push(container);
+		const mixes =[];
+
+		const elements = document.querySelectorAll(
+			'yt-thumbnail-overlay-badge-view-model .yt-badge-shape__icon, yt-thumbnail-overlay-badge-view-model .ytBadgeShapeIcon, .ytBadgeShapeText, .yt-badge-shape__text, a[title^="Mix -"], a[title^="Mix:"]'
+		);
+
+		elements.forEach(el => {
+			let isMix = false;
+			if (el.tagName.toLowerCase() === 'a') {
+				isMix = true; // Sélectionné via l'attribut title
+			} else if (el.classList.contains('yt-badge-shape__icon') || el.classList.contains('ytBadgeShapeIcon')) {
+				isMix = true; // Sélectionné via la classe d'icône
+			} else {
+				// Sélectionné via le contenu textuel
+				if (el.textContent.trim().toLowerCase() === 'mix') {
+					isMix = true;
+				}
+			}
+
+			if (isMix) {
+				const container = el.closest('ytd-rich-item-renderer, ytd-video-renderer, ytd-compact-video-renderer, ytd-grid-video-renderer');
+				if (container && !mixes.includes(container)) mixes.push(container);
+			}
 		});
 
 		logDebug(
@@ -377,6 +405,24 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		);
 
 		return mixes;
+	};
+
+	// ===========================================================
+
+	const findMembersOnlyElements = () => {
+		const elements =[];
+		const badges = document.querySelectorAll('ytd-badge-supported-renderer, .ytBadgeShapeText, .yt-badge-shape__text, badge-shape');
+
+		badges.forEach(badge => {
+			const text = badge.textContent.trim().toLowerCase();
+			if (text.includes('member') || text.includes('membre') || text.includes('premium') || text.includes('sponsor') || text.includes('payant')) {
+				const container = badge.closest('ytd-rich-item-renderer, ytd-video-renderer, ytd-compact-video-renderer, ytd-grid-video-renderer');
+				if (container && !elements.includes(container)) elements.push(container);
+			}
+		});
+
+		logDebug(`Found ${elements.length} members only/paid elements`);
+		return elements;
 	};
 
 	// ===========================================================
@@ -748,6 +794,31 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 	// ===========================================================
 
+	const updateClassOnMembersOnlyItems = () => {
+		const section = determineYoutubeSection();
+
+		document
+			.querySelectorAll('.YT-HWV-MEMBERS-ONLY-DIMMED')
+			.forEach((el) => el.classList.remove('YT-HWV-MEMBERS-ONLY-DIMMED'));
+		document
+			.querySelectorAll('.YT-HWV-MEMBERS-ONLY-HIDDEN')
+			.forEach((el) => el.classList.remove('YT-HWV-MEMBERS-ONLY-HIDDEN'));
+
+		const state = localStorage[`YTHWV_STATE_MEMBERS_ONLY_${section}`];
+
+		const membersOnlyItems = findMembersOnlyElements();
+
+		membersOnlyItems.forEach((item) => {
+			if (state === 'dimmed') {
+				item.classList.add('YT-HWV-MEMBERS-ONLY-DIMMED');
+			} else if (state === 'hidden') {
+				item.classList.add('YT-HWV-MEMBERS-ONLY-HIDDEN');
+			}
+		});
+	};
+
+	// ===========================================================
+
 	const getBlockedChannels = () => {
 		const list = gmc.get('BLOCKED_CHANNELS_LIST') || '';
 		return list.split('\n').map(c => c.trim()).filter(c => c.length > 0);
@@ -937,6 +1008,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 			'.YT-HWV-SHORTS-HIDDEN',
 			'.YT-HWV-UPCOMING-HIDDEN',
 			'.YT-HWV-MIXES-HIDDEN',
+			'.YT-HWV-MEMBERS-ONLY-HIDDEN',
 			'.YT-HWV-BLOCKED-CHANNEL-HIDDEN'
 		].join(',');
 
@@ -1000,6 +1072,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 						updateClassOnShortsItems();
 						updateClassOnUpcomingItems();
 						updateClassOnMixesItems();
+						updateClassOnMembersOnlyItems();
 						updateClassOnBlockedChannelItems();
 						renderButtons();
 					});
@@ -1047,6 +1120,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		updateClassOnShortsItems();
 		updateClassOnUpcomingItems();
 		updateClassOnMixesItems();
+		updateClassOnMembersOnlyItems();
 		updateClassOnBlockedChannelItems();
 		injectBlockChannelButtons();
 		renderButtons();
