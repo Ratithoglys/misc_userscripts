@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         YouTube Grid Customizer
-// @namespace    http://tampermonkey.net/
-// @version      0.5
+// @namespace    https://ebumna.net/
+// @version      0.5a
 // @description  Customize the number of items per row on the YouTube subscriptions page.
 // @author       Lénaïc JAOUEN
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
 // @match        *://*.youtube.com/*
-// @grant        GM_addStyle
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
 // @updateURL    https://github.com/Ratithoglys/misc_userscripts/raw/main/youtubegrid.user.js
 // @downloadURL  https://github.com/Ratithoglys/misc_userscripts/raw/main/youtubegrid.user.js
+// @grant        GM_addStyle
 // ==/UserScript==
 
 (function() {
