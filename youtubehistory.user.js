@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube: Hide Watched Videos extended - Ebumna
 // @namespace    https://ebumna.net/
-// @version      6.16d
+// @version      6.16e
 // @license      MIT
 // @description  Hides watched videos from extension. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Ev Haus
@@ -120,10 +120,10 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 .YT-HWV-UPCOMING-DIMMED { background-color: rgba(0,200,255,0.2); opacity: 0.3 }
 
 .YT-HWV-MIXES-HIDDEN { display: none !important }
-.YT-HWV-MIXES-DIMMED { opacity: 0.3 }
+.YT-HWV-MIXES-DIMMED { background-color: rgba(255,0,55,0.2); opacity: 0.3 }
 
 .YT-HWV-MEMBERS-ONLY-HIDDEN { display: none !important }
-.YT-HWV-MEMBERS-ONLY-DIMMED { background-color: rgba(255,215,0,0.2); opacity: 0.3 }
+.YT-HWV-MEMBERS-ONLY-DIMMED { background-color: rgba(0,181,26,0.2); opacity: 0.3 }
 
 .YT-HWV-BLOCKED-CHANNEL-HIDDEN { display: none !important }
 .YT-HWV-BLOCKED-CHANNEL-DIMMED { background-color: rgba(200,0,255,0.2); opacity: 0.3 }
@@ -192,7 +192,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		{ // HISTORY
 			icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M8.76 1.487a11 11 0 11-7.54 12.706 1 1 0 011.96-.4 9 9 0 0014.254 5.38A9 9 0 0016.79 4.38 9 9 0 004.518 7H7a1 1 0 010 2H1V3a1 1 0 012 0v2.678a11 11 0 015.76-4.192ZM12 6a1 1 0 00-1 1v5.58l.504.288 3.5 2a1 1 0 10.992-1.736L13 11.42V7a1 1 0 00-1-1Z"/></svg>',
 			iconHidden:
-				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M8.76 1.487a11 11 0 11-7.54 12.706 1 1 0 011.96-.4 9 9 0 0014.254 5.38A9 9 0 0016.79 4.38 9 9 0 004.518 7H7a1 1 0 010 2H1V3a1 1 0 012 0v2.678a11 11 0 015.76-4.192ZM12 6a1 1 0 00-1 1v5.58l.504.288 3.5 2a1 1 0 10.992-1.736L13 11.42V7a1 1 0 00-1-1Z"/><path fill="currentColor" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
+				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M8.76 1.487a11 11 0 11-7.54 12.706 1 1 0 011.96-.4 9 9 0 0014.254 5.38A9 9 0 0016.79 4.38 9 9 0 004.518 7H7a1 1 0 010 2H1V3a1 1 0 012 0v2.678a11 11 0 015.76-4.192ZM12 6a1 1 0 00-1 1v5.58l.504.288 3.5 2a1 1 0 10.992-1.736L13 11.42V7a1 1 0 00-1-1Z"/><path fill="rgb(220,220,220)" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
 			name: 'Toggle History Videos',
 			stateKey: 'YTHWV_STATE_HISTORY',
 			type: 'toggle',
@@ -200,15 +200,15 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		{ // SHORTS
 			icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="m13.467 1.19-8 4.7a5 5 0 00-.255 8.46 5 5 0 005.32 8.462l8-4.7a5 5 0 00.258-8.462 5 5 0 001.641-6.464l-.12-.217a5 5 0 00-6.844-1.78m5.12 2.79a2.999 2.999 0 01-1.067 4.107l-1.327.78a1 1 0 00.096 1.775l.943.423a3 3 0 01.288 5.323l-8 4.7a3 3 0 01-3.039-5.173l1.327-.78a1 1 0 00-.097-1.775l-.942-.423a3 3 0 01-.288-5.323l8-4.7a3 3 0 014.106 1.066ZM15 12l-5-3v6l5-3Z"/></svg>',
 			iconHidden:
-				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="m13.467 1.19-8 4.7a5 5 0 00-.255 8.46 5 5 0 005.32 8.462l8-4.7a5 5 0 00.258-8.462 5 5 0 001.641-6.464l-.12-.217a5 5 0 00-6.844-1.78m5.12 2.79a2.999 2.999 0 01-1.067 4.107l-1.327.78a1 1 0 00.096 1.775l.943.423a3 3 0 01.288 5.323l-8 4.7a3 3 0 01-3.039-5.173l1.327-.78a1 1 0 00-.097-1.775l-.942-.423a3 3 0 01-.288-5.323l8-4.7a3 3 0 014.106 1.066ZM15 12l-5-3v6l5-3Z"/><path fill="currentColor" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
+				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="m13.467 1.19-8 4.7a5 5 0 00-.255 8.46 5 5 0 005.32 8.462l8-4.7a5 5 0 00.258-8.462 5 5 0 001.641-6.464l-.12-.217a5 5 0 00-6.844-1.78m5.12 2.79a2.999 2.999 0 01-1.067 4.107l-1.327.78a1 1 0 00.096 1.775l.943.423a3 3 0 01.288 5.323l-8 4.7a3 3 0 01-3.039-5.173l1.327-.78a1 1 0 00-.097-1.775l-.942-.423a3 3 0 01-.288-5.323l8-4.7a3 3 0 014.106 1.066ZM15 12l-5-3v6l5-3Z"/><path fill="rgb(220,220,220)" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
 			name: 'Toggle Shorts',
 			stateKey: 'YTHWV_STATE_SHORTS',
 			type: 'toggle',
 		},
 		{ // UPCOMING
-			icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6c-6 0-10 4-10 10v7l-3 6h26l-3-6v-7c0-6-4-10-10-10z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="24" cy="39" r="3" fill="currentColor"/></svg>',
+			icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c-3 0-5 2-5 5v3.5l-1.5 3h13l-1.5-3v-3.5c0-3-2-5-5-5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="19.5" r="1.5" fill="currentColor"/></svg>',
 			iconHidden:
-				'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6c-6 0-10 4-10 10v7l-3 6h26l-3-6v-7c0-6-4-10-10-10z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="24" cy="39" r="3" fill="currentColor"/><path fill="currentColor" d="m7.501 5.55 4.066-2.42 24.26 40.78-4.065 2.418z"/></svg>',
+				'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c-3 0-5 2-5 5v3.5l-1.5 3h13l-1.5-3v-3.5c0-3-2-5-5-5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="19.5" r="1.5" fill="currentColor"/><path fill="rgb(220,220,220)" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
 			name: 'Toggle Upcoming',
 			stateKey: 'YTHWV_STATE_UPCOMING',
 			type: 'toggle',
@@ -216,7 +216,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		{ // MUSIC / MIXES
             icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M11 2.766v10.99a4.5 4.5 0 101.994 3.976L13 17.5V9.2l5.485 3.292A1 1 0 0020 11.634V6.966a1 1 0 00-.485-.857l-7-4.2A1 1 0 0011 2.766Zm2 4.102V4.533l5 3v2.335l-5-3ZM8.5 15a2.5 2.5 0 110 5.001A2.5 2.5 0 018.5 15Z"/></svg>',
 			iconHidden:
-				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M11 2.766v10.99a4.5 4.5 0 101.994 3.976L13 17.5V9.2l5.485 3.292A1 1 0 0020 11.634V6.966a1 1 0 00-.485-.857l-7-4.2A1 1 0 0011 2.766Zm2 4.102V4.533l5 3v2.335l-5-3ZM8.5 15a2.5 2.5 0 110 5.001A2.5 2.5 0 018.5 15Z"/><path fill="currentColor" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
+				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M11 2.766v10.99a4.5 4.5 0 101.994 3.976L13 17.5V9.2l5.485 3.292A1 1 0 0020 11.634V6.966a1 1 0 00-.485-.857l-7-4.2A1 1 0 0011 2.766Zm2 4.102V4.533l5 3v2.335l-5-3ZM8.5 15a2.5 2.5 0 110 5.001A2.5 2.5 0 018.5 15Z"/><path fill="rgb(220,220,220)" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
 			name: 'Toggle Mixes',
 			stateKey: 'YTHWV_STATE_MIXES',
 			type: 'toggle',
@@ -224,7 +224,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
         { // MEMBERS ONLY
             icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 13c-1 1-2.5 1.5-4 1.5-2.5 0-4.5-1.5-5-4h-1.5v-1h1.2c-.1-.3-.2-.6-.2-1s.1-.7.2-1h-1.2v-1h1.5c.5-2.5 2.5-4 5-4 1.5 0 3 .5 4 1.5l-1.5 1.5c-.5-.5-1.5-1-2.5-1-1.5 0-2.5 1-3 2.5h4v1h-4.3c0 .3-.1.6-.1 1s0 .7.1 1h4.3v1h-4c.5 1.5 1.5 2.5 3 2.5.5 0 1.5-.5 2-1z" /></svg>',
             iconHidden:
-                '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 13c-1 1-2.5 1.5-4 1.5-2.5 0-4.5-1.5-5-4h-1.5v-1h1.2c-.1-.3-.2-.6-.2-1s.1-.7.2-1h-1.2v-1h1.5c.5-2.5 2.5-4 5-4 1.5 0 3 .5 4 1.5l-1.5 1.5c-.5-.5-1.5-1-2.5-1-1.5 0-2.5 1-3 2.5h4v1h-4.3c0 .3-.1.6-.1 1s0 .7.1 1h4.3v1h-4c.5 1.5 1.5 2.5 3 2.5.5 0 1.5-.5 2-1z" /><path fill="currentColor" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
+                '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 13c-1 1-2.5 1.5-4 1.5-2.5 0-4.5-1.5-5-4h-1.5v-1h1.2c-.1-.3-.2-.6-.2-1s.1-.7.2-1h-1.2v-1h1.5c.5-2.5 2.5-4 5-4 1.5 0 3 .5 4 1.5l-1.5 1.5c-.5-.5-1.5-1-2.5-1-1.5 0-2.5 1-3 2.5h4v1h-4.3c0 .3-.1.6-.1 1s0 .7.1 1h4.3v1h-4c.5 1.5 1.5 2.5 3 2.5.5 0 1.5-.5 2-1z" /><path fill="rgb(220,220,220)" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
             name: 'Toggle Members Only / Paid',
             stateKey: 'YTHWV_STATE_MEMBERS_ONLY',
             type: 'toggle',
@@ -232,7 +232,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		{ // CHANNELS
 			icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM7.07 18.28c.43-.9 3.05-1.78 4.93-1.78s4.5.88 4.93 1.78C15.57 19.36 13.86 20 12 20s-3.57-.64-4.93-1.72zm11.29-1.45c-1.43-1.74-4.9-2.33-6.36-2.33s-4.93.59-6.36 2.33C4.62 15.49 4 13.82 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8c0 1.82-.62 3.49-1.64 4.83zM12 6c-1.94 0-3.5 1.56-3.5 3.5S10.06 13 12 13s3.5-1.56 3.5-3.5S13.94 6 12 6zm0 6c-.83 0-1.5-.67-1.5-1.5S11.17 9 12 9s1.5.67 1.5 1.5S12.83 12 12 12z"></path></svg>',
 			iconHidden:
-				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM7.07 18.28c.43-.9 3.05-1.78 4.93-1.78s4.5.88 4.93 1.78C15.57 19.36 13.86 20 12 20s-3.57-.64-4.93-1.72zm11.29-1.45c-1.43-1.74-4.9-2.33-6.36-2.33s-4.93.59-6.36 2.33C4.62 15.49 4 13.82 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8c0 1.82-.62 3.49-1.64 4.83zM12 6c-1.94 0-3.5 1.56-3.5 3.5S10.06 13 12 13s3.5-1.56 3.5-3.5S13.94 6 12 6zm0 6c-.83 0-1.5-.67-1.5-1.5S11.17 9 12 9s1.5.67 1.5 1.5S12.83 12 12 12z"/><path fill="currentColor" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
+				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM7.07 18.28c.43-.9 3.05-1.78 4.93-1.78s4.5.88 4.93 1.78C15.57 19.36 13.86 20 12 20s-3.57-.64-4.93-1.72zm11.29-1.45c-1.43-1.74-4.9-2.33-6.36-2.33s-4.93.59-6.36 2.33C4.62 15.49 4 13.82 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8c0 1.82-.62 3.49-1.64 4.83zM12 6c-1.94 0-3.5 1.56-3.5 3.5S10.06 13 12 13s3.5-1.56 3.5-3.5S13.94 6 12 6zm0 6c-.83 0-1.5-.67-1.5-1.5S11.17 9 12 9s1.5.67 1.5 1.5S12.83 12 12 12z"/><path fill="rgb(220,220,220)" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
 			name: 'Toggle Channels',
 			stateKey: 'YTHWV_STATE_BLOCKED_CHANNELS',
 			type: 'toggle',
@@ -415,8 +415,8 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 		badges.forEach(badge => {
 			const text = badge.textContent.trim().toLowerCase();
-			if (text.includes('member') || text.includes('membre') || text.includes('premium') || text.includes('sponsor') || text.includes('payant')) {
-				const container = badge.closest('ytd-rich-item-renderer, ytd-video-renderer, ytd-compact-video-renderer, ytd-grid-video-renderer');
+			if (text.includes('member') || text.includes('membre') || text.includes('premium') || text.includes('sponsor') || text.includes('payant') || text.includes('pay to watch') || text.includes('buy or rent') || text.includes('acheter') || text.includes('louer')) {
+				const container = badge.closest('ytd-rich-item-renderer, ytd-video-renderer, ytd-compact-video-renderer, ytd-grid-video-renderer, ytd-compact-movie-renderer, yt-lockup-view-model');
 				if (container && !elements.includes(container)) elements.push(container);
 			}
 		});
@@ -866,7 +866,9 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
             'ytd-grid-video-renderer',
             'ytd-compact-video-renderer',
             'ytd-reel-item-renderer',
-            'yt-page-header-renderer' // <--- Nouveau format en-tête
+            'yt-page-header-renderer',
+            'ytd-compact-movie-renderer',
+            'yt-lockup-view-model'
         ].join(','));
 
 		videoItems.forEach(item => {
