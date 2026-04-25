@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Instagram & Facebook Video Controls
-// @namespace    https://fxzfun.com/
-// @version      0.2
+// @namespace    https://ebumna.net/
+// @version      0.2a
 // @description  Adds video player controls to Instagram videos and keyboard shortcuts for fullscreen (press 'f') and mute (press 'm')
-// @author       FXZFun, Lénaïc JAOUEN
-// @match        https://www.instagram.com/
+// @author       FXZFun
+// @author       Lénaïc JAOUEN
 // @match        https://www.instagram.com/*
 // @match        https://www.facebook.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=instagram.com
