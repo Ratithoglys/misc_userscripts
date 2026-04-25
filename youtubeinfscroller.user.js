@@ -1,12 +1,11 @@
 // ==UserScript==
 // @name         YouTube Infinite Scroll Manager
-// @namespace    http://ebumna.net/
+// @namespace    https://ebumna.net/
 // @version      0.2
 // @description  Contrôle discret du défilement infini avec emojis et texte adaptés
 // @author       Lénaïc JAOUEN
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
 // @match        https://www.youtube.com/*
-// @icon         https://www.youtube.com/favicon.ico
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
 // @updateURL    https://github.com/Ratithoglys/Misc_Utils/raw/main/youtubeinfscroller.user.js
 // @downloadURL  https://github.com/Ratithoglys/Misc_Utils/raw/main/youtubeinfscroller.user.js
 // @grant        GM_addStyle
