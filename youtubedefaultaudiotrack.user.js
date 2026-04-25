@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Default Audio Track
-// @namespace    bp-yt-audio-track-default
-// @version      2.8
+// @namespace    http://ebumna.net/
+// @version      2.8a
 // @description  Makes it possible to select the desired Audio Track played by default and adds a badge to indicate if multiple audio languages are available and if the language has been changed. Basé sur https://greasyfork.org/en/scripts/488877-youtube-default-audio-track
 // @author       BuIlDaLiBlE
 // @author       Lénaïc JAOUEN
@@ -10,6 +10,7 @@
 // @grant        none
 // @run-at       document-end
 // @license      MIT
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
 // @updateURL    https://github.com/Ratithoglys/misc_userscripts/raw/main/youtubedefaultaudiotrack.user.js
 // @downloadURL  https://github.com/Ratithoglys/misc_userscripts/raw/main/youtubedefaultaudiotrack.user.js
 // ==/UserScript==
