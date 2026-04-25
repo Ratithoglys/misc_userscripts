@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube: Hide Watched Videos extended - Ebumna
 // @namespace    https://ebumna.net/
-// @version      6.16e
+// @version      6.16f
 // @license      MIT
 // @description  Hides watched videos from extension. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Ev Haus
@@ -144,7 +144,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 	background: transparent !important;
 	border: 0;
     border-radius: 40px;
-	color: #f1f1f1 !important;
+	color: #f1f1f1;
 	cursor: pointer;
     display: flex;
 	height: 40px;
@@ -158,7 +158,10 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 	background: rgba(255, 255, 255, 0.15) !important;
 }
 
-.YT-HWV-BUTTON-DISABLED { color: rgba(255, 255, 255, 0.3) !important }
+.YT-HWV-BUTTON-DISABLED {
+	opacity: 0.4;
+	filter: grayscale(0.5);
+}
 
 .YT-HWV-MENU {
 	background: #F8F8F8;
@@ -182,17 +185,18 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 	const BUTTONS = [
 		{
-			icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><path fill="currentColor" d="M24 9C14 9 5.46 15.22 2 24c3.46 8.78 12 15 22 15 10.01 0 18.54-6.22 22-15-3.46-8.78-11.99-15-22-15zm0 25c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10-4.48 10-10 10zm0-16c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"/></svg>',
+			icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">  <path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5 5.01 0 9.27-3.11 11-7.5-1.73-4.39-5.99-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>',
 			iconHidden:
-				'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><path fill="currentColor" d="M24 14c5.52 0 10 4.48 10 10 0 1.29-.26 2.52-.71 3.65l5.85 5.85c3.02-2.52 5.4-5.78 6.87-9.5-3.47-8.78-12-15-22.01-15-2.8 0-5.48.5-7.97 1.4l4.32 4.31c1.13-.44 2.36-.71 3.65-.71zM4 8.55l4.56 4.56.91.91C6.17 16.6 3.56 20.03 2 24c3.46 8.78 12 15 22 15 3.1 0 6.06-.6 8.77-1.69l.85.85L39.45 44 42 41.46 6.55 6 4 8.55zM15.06 19.6l3.09 3.09c-.09.43-.15.86-.15 1.31 0 3.31 2.69 6 6 6 .45 0 .88-.06 1.3-.15l3.09 3.09C27.06 33.6 25.58 34 24 34c-5.52 0-10-4.48-10-10 0-1.58.4-3.06 1.06-4.4zm8.61-1.57 6.3 6.3L30 24c0-3.31-2.69-6-6-6l-.33.03z"/></svg>',
+				'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5 5.01 0 9.27-3.11 11-7.5-1.73-4.39-5.99-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><path fill="white" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
 			name: 'Toggle Watched Videos',
 			stateKey: 'YTHWV_STATE',
 			type: 'toggle',
 		},
 		{ // HISTORY
+            color: 'rgb(255,255,0)',
 			icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M8.76 1.487a11 11 0 11-7.54 12.706 1 1 0 011.96-.4 9 9 0 0014.254 5.38A9 9 0 0016.79 4.38 9 9 0 004.518 7H7a1 1 0 010 2H1V3a1 1 0 012 0v2.678a11 11 0 015.76-4.192ZM12 6a1 1 0 00-1 1v5.58l.504.288 3.5 2a1 1 0 10.992-1.736L13 11.42V7a1 1 0 00-1-1Z"/></svg>',
 			iconHidden:
-				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M8.76 1.487a11 11 0 11-7.54 12.706 1 1 0 011.96-.4 9 9 0 0014.254 5.38A9 9 0 0016.79 4.38 9 9 0 004.518 7H7a1 1 0 010 2H1V3a1 1 0 012 0v2.678a11 11 0 015.76-4.192ZM12 6a1 1 0 00-1 1v5.58l.504.288 3.5 2a1 1 0 10.992-1.736L13 11.42V7a1 1 0 00-1-1Z"/><path fill="rgb(220,220,220)" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
+				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M8.76 1.487a11 11 0 11-7.54 12.706 1 1 0 011.96-.4 9 9 0 0014.254 5.38A9 9 0 0016.79 4.38 9 9 0 004.518 7H7a1 1 0 010 2H1V3a1 1 0 012 0v2.678a11 11 0 015.76-4.192ZM12 6a1 1 0 00-1 1v5.58l.504.288 3.5 2a1 1 0 10.992-1.736L13 11.42V7a1 1 0 00-1-1Z"/><path fill="white" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
 			name: 'Toggle History Videos',
 			stateKey: 'YTHWV_STATE_HISTORY',
 			type: 'toggle',
@@ -200,39 +204,43 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		{ // SHORTS
 			icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="m13.467 1.19-8 4.7a5 5 0 00-.255 8.46 5 5 0 005.32 8.462l8-4.7a5 5 0 00.258-8.462 5 5 0 001.641-6.464l-.12-.217a5 5 0 00-6.844-1.78m5.12 2.79a2.999 2.999 0 01-1.067 4.107l-1.327.78a1 1 0 00.096 1.775l.943.423a3 3 0 01.288 5.323l-8 4.7a3 3 0 01-3.039-5.173l1.327-.78a1 1 0 00-.097-1.775l-.942-.423a3 3 0 01-.288-5.323l8-4.7a3 3 0 014.106 1.066ZM15 12l-5-3v6l5-3Z"/></svg>',
 			iconHidden:
-				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="m13.467 1.19-8 4.7a5 5 0 00-.255 8.46 5 5 0 005.32 8.462l8-4.7a5 5 0 00.258-8.462 5 5 0 001.641-6.464l-.12-.217a5 5 0 00-6.844-1.78m5.12 2.79a2.999 2.999 0 01-1.067 4.107l-1.327.78a1 1 0 00.096 1.775l.943.423a3 3 0 01.288 5.323l-8 4.7a3 3 0 01-3.039-5.173l1.327-.78a1 1 0 00-.097-1.775l-.942-.423a3 3 0 01-.288-5.323l8-4.7a3 3 0 014.106 1.066ZM15 12l-5-3v6l5-3Z"/><path fill="rgb(220,220,220)" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
+				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="m13.467 1.19-8 4.7a5 5 0 00-.255 8.46 5 5 0 005.32 8.462l8-4.7a5 5 0 00.258-8.462 5 5 0 001.641-6.464l-.12-.217a5 5 0 00-6.844-1.78m5.12 2.79a2.999 2.999 0 01-1.067 4.107l-1.327.78a1 1 0 00.096 1.775l.943.423a3 3 0 01.288 5.323l-8 4.7a3 3 0 01-3.039-5.173l1.327-.78a1 1 0 00-.097-1.775l-.942-.423a3 3 0 01-.288-5.323l8-4.7a3 3 0 014.106 1.066ZM15 12l-5-3v6l5-3Z"/><path fill="white" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
 			name: 'Toggle Shorts',
 			stateKey: 'YTHWV_STATE_SHORTS',
 			type: 'toggle',
 		},
 		{ // UPCOMING
+            color: 'rgb(0,200,255)',
 			icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c-3 0-5 2-5 5v3.5l-1.5 3h13l-1.5-3v-3.5c0-3-2-5-5-5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="19.5" r="1.5" fill="currentColor"/></svg>',
 			iconHidden:
-				'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c-3 0-5 2-5 5v3.5l-1.5 3h13l-1.5-3v-3.5c0-3-2-5-5-5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="19.5" r="1.5" fill="currentColor"/><path fill="rgb(220,220,220)" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
+				'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c-3 0-5 2-5 5v3.5l-1.5 3h13l-1.5-3v-3.5c0-3-2-5-5-5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="19.5" r="1.5" fill="currentColor"/><path fill="white" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
 			name: 'Toggle Upcoming',
 			stateKey: 'YTHWV_STATE_UPCOMING',
 			type: 'toggle',
 		},
 		{ // MUSIC / MIXES
+            color: 'rgb(255,0,55)',
             icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M11 2.766v10.99a4.5 4.5 0 101.994 3.976L13 17.5V9.2l5.485 3.292A1 1 0 0020 11.634V6.966a1 1 0 00-.485-.857l-7-4.2A1 1 0 0011 2.766Zm2 4.102V4.533l5 3v2.335l-5-3ZM8.5 15a2.5 2.5 0 110 5.001A2.5 2.5 0 018.5 15Z"/></svg>',
 			iconHidden:
-				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M11 2.766v10.99a4.5 4.5 0 101.994 3.976L13 17.5V9.2l5.485 3.292A1 1 0 0020 11.634V6.966a1 1 0 00-.485-.857l-7-4.2A1 1 0 0011 2.766Zm2 4.102V4.533l5 3v2.335l-5-3ZM8.5 15a2.5 2.5 0 110 5.001A2.5 2.5 0 018.5 15Z"/><path fill="rgb(220,220,220)" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
+				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M11 2.766v10.99a4.5 4.5 0 101.994 3.976L13 17.5V9.2l5.485 3.292A1 1 0 0020 11.634V6.966a1 1 0 00-.485-.857l-7-4.2A1 1 0 0011 2.766Zm2 4.102V4.533l5 3v2.335l-5-3ZM8.5 15a2.5 2.5 0 110 5.001A2.5 2.5 0 018.5 15Z"/><path fill="white" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
 			name: 'Toggle Mixes',
 			stateKey: 'YTHWV_STATE_MIXES',
 			type: 'toggle',
 		},
         { // MEMBERS ONLY
-            icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 13c-1 1-2.5 1.5-4 1.5-2.5 0-4.5-1.5-5-4h-1.5v-1h1.2c-.1-.3-.2-.6-.2-1s.1-.7.2-1h-1.2v-1h1.5c.5-2.5 2.5-4 5-4 1.5 0 3 .5 4 1.5l-1.5 1.5c-.5-.5-1.5-1-2.5-1-1.5 0-2.5 1-3 2.5h4v1h-4.3c0 .3-.1.6-.1 1s0 .7.1 1h4.3v1h-4c.5 1.5 1.5 2.5 3 2.5.5 0 1.5-.5 2-1z" /></svg>',
+            color: 'rgb(0,181,26)',
+            icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="m14.5 9.083-.144-.12a2 2 0 0 0-1.28-.463H10.75A1.75 1.75 0 0 0 9 10.25v0c0 .966.784 1.75 1.75 1.75h2.5c.966 0 1.75.784 1.75 1.75v0a1.75 1.75 0 0 1-1.75 1.75h-2.838a2 2 0 0 1-1.394-.566L9 14.917M12 8V7m0 10v-1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
             iconHidden:
-                '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 13c-1 1-2.5 1.5-4 1.5-2.5 0-4.5-1.5-5-4h-1.5v-1h1.2c-.1-.3-.2-.6-.2-1s.1-.7.2-1h-1.2v-1h1.5c.5-2.5 2.5-4 5-4 1.5 0 3 .5 4 1.5l-1.5 1.5c-.5-.5-1.5-1-2.5-1-1.5 0-2.5 1-3 2.5h4v1h-4.3c0 .3-.1.6-.1 1s0 .7.1 1h4.3v1h-4c.5 1.5 1.5 2.5 3 2.5.5 0 1.5-.5 2-1z" /><path fill="rgb(220,220,220)" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
+                '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="m14.5 9.083-.144-.12a2 2 0 0 0-1.28-.463H10.75A1.75 1.75 0 0 0 9 10.25v0c0 .966.784 1.75 1.75 1.75h2.5c.966 0 1.75.784 1.75 1.75v0a1.75 1.75 0 0 1-1.75 1.75h-2.838a2 2 0 0 1-1.394-.566L9 14.917M12 8V7m0 10v-1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path fill="white" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
             name: 'Toggle Members Only / Paid',
             stateKey: 'YTHWV_STATE_MEMBERS_ONLY',
             type: 'toggle',
         },
 		{ // CHANNELS
+            color: 'rgb(200,0,255)',
 			icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM7.07 18.28c.43-.9 3.05-1.78 4.93-1.78s4.5.88 4.93 1.78C15.57 19.36 13.86 20 12 20s-3.57-.64-4.93-1.72zm11.29-1.45c-1.43-1.74-4.9-2.33-6.36-2.33s-4.93.59-6.36 2.33C4.62 15.49 4 13.82 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8c0 1.82-.62 3.49-1.64 4.83zM12 6c-1.94 0-3.5 1.56-3.5 3.5S10.06 13 12 13s3.5-1.56 3.5-3.5S13.94 6 12 6zm0 6c-.83 0-1.5-.67-1.5-1.5S11.17 9 12 9s1.5.67 1.5 1.5S12.83 12 12 12z"></path></svg>',
 			iconHidden:
-				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM7.07 18.28c.43-.9 3.05-1.78 4.93-1.78s4.5.88 4.93 1.78C15.57 19.36 13.86 20 12 20s-3.57-.64-4.93-1.72zm11.29-1.45c-1.43-1.74-4.9-2.33-6.36-2.33s-4.93.59-6.36 2.33C4.62 15.49 4 13.82 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8c0 1.82-.62 3.49-1.64 4.83zM12 6c-1.94 0-3.5 1.56-3.5 3.5S10.06 13 12 13s3.5-1.56 3.5-3.5S13.94 6 12 6zm0 6c-.83 0-1.5-.67-1.5-1.5S11.17 9 12 9s1.5.67 1.5 1.5S12.83 12 12 12z"/><path fill="rgb(220,220,220)" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
+				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM7.07 18.28c.43-.9 3.05-1.78 4.93-1.78s4.5.88 4.93 1.78C15.57 19.36 13.86 20 12 20s-3.57-.64-4.93-1.72zm11.29-1.45c-1.43-1.74-4.9-2.33-6.36-2.33s-4.93.59-6.36 2.33C4.62 15.49 4 13.82 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8c0 1.82-.62 3.49-1.64 4.83zM12 6c-1.94 0-3.5 1.56-3.5 3.5S10.06 13 12 13s3.5-1.56 3.5-3.5S13.94 6 12 6zm0 6c-.83 0-1.5-.67-1.5-1.5S11.17 9 12 9s1.5.67 1.5 1.5S12.83 12 12 12z"/><path fill="white" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
 			name: 'Toggle Channels',
 			stateKey: 'YTHWV_STATE_BLOCKED_CHANNELS',
 			type: 'toggle',
@@ -1036,7 +1044,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		buttonArea.classList.add('YT-HWV-BUTTONS');
 
 		// Render buttons
-		BUTTONS.forEach(({ icon, iconHidden, name, stateKey, type }) => {
+		BUTTONS.forEach(({ icon, iconHidden, name, stateKey, type, color }) => {
 			// For toggle buttons, determine where in localStorage they track state
 			const section = determineYoutubeSection();
 			const storageKey = [stateKey, section].join('_');
@@ -1051,6 +1059,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 			button.classList.add('YT-HWV-BUTTON');
 			if (toggleButtonState !== 'normal')
 				button.classList.add('YT-HWV-BUTTON-DISABLED');
+            if (color) button.style.color = color;
 			button.innerHTML = toggleButtonState === 'hidden' ? iconHidden : icon;
 			buttonArea.appendChild(button);
 
