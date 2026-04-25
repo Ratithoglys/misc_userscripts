@@ -6,7 +6,6 @@
 // @author       BuIlDaLiBlE
 // @author       Lénaïc JAOUEN
 // @match        https://*.youtube.com/*
-// @icon         https://www.youtube.com/favicon.ico
 // @grant        none
 // @run-at       document-end
 // @license      MIT
