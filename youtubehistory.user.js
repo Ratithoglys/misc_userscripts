@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube: Hide Watched Videos extended - Ebumna
 // @namespace    https://ebumna.net/
-// @version      6.16g
+// @version      6.16h
 // @license      MIT
 // @description  Hides watched videos from extension. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Ev Haus
@@ -73,6 +73,8 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 			BLOCKED_CHANNELS_LIST: {
 				label: 'Blocked Channels (one per line)',
 				type: 'textarea',
+                cols: 100,
+                rows: 10,
 				default: '',
 			},
 		},
@@ -882,7 +884,8 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 		videoItems.forEach(item => {
 			// 1. Recherche standard pour les vidéos
-			let channelLink = item.querySelector('ytd-channel-name a, yt-content-metadata-view-model .yt-core-attributed-string__link');
+            // CORRECTION: Utilisation directe de 'a' pour éviter les bugs si YouTube renomme ses classes CSS
+			let channelLink = item.querySelector('ytd-channel-name a, yt-content-metadata-view-model a');
 
             // 2. Recherche spécifique pour le nouvel en-tête de chaîne
             if (!channelLink && item.tagName.toLowerCase() === 'yt-page-header-renderer') {
