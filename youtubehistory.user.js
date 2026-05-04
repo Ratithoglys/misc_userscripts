@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube: Hide Watched Videos extended - Ebumna
 // @namespace    https://ebumna.net/
-// @version      6.16h
+// @version      6.16i
 // @license      MIT
 // @description  Hides watched videos from extension. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Ev Haus
@@ -102,10 +102,6 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 	};
 
     // add to queue / watch later
-    addStyle(`
-.ytThumbnailHoverOverlayToggleActionsViewModelHost { top:0; }
-`);
-
 	addStyle(`
 .ytThumbnailHoverOverlayToggleActionsViewModelHost { top:0; }
 
