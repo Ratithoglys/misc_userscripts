@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Infinite Scroll Manager
 // @namespace    https://ebumna.net/
-// @version      0.3
+// @version      0.4
 // @description  Contrôle discret du défilement infini avec emojis et texte adaptés
 // @author       Lénaïc JAOUEN
 // @match        https://www.youtube.com/*
@@ -83,13 +83,28 @@
         document.body.appendChild(btn);
 
         updateButtonAppearance(btn);
+
+        // Correction de superposition : si le script Audio Track a déjà créé son bouton, on le pousse vers le haut
+        const audioBadge = document.getElementById('audioTrackBadge');
+        if (audioBadge) {
+            // Un léger délai permet de s'assurer que notre bouton vient de finir son calcul de taille (offsetHeight)
+            requestAnimationFrame(() => {
+                audioBadge.style.bottom = `${parseInt(window.getComputedStyle(btn).bottom) + btn.offsetHeight + 10}px`;
+            });
+        }
     }
 
     function updateButtonAppearance(btn) {
         btn.setAttribute('data-state', isEnabled ? 'enabled' : 'disabled');
-        btn.innerHTML = isEnabled
-            ? '<span>▶️</span> Scrolling'
-            : '<span>⏸️</span> Pause';
+
+        // On n'utilise PAS innerHTML pour éviter les blocages de sécurité (Trusted Types) de YouTube
+        btn.textContent = '';
+
+        const span = document.createElement('span');
+        span.textContent = isEnabled ? '▶️' : '⏸️';
+
+        btn.appendChild(span);
+        btn.appendChild(document.createTextNode(isEnabled ? ' Scrolling' : ' Pause'));
     }
 
     function toggleScrollSystem() {
