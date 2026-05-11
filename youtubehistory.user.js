@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         YouTube: Hide Watched Videos extended - Ebumna
 // @namespace    https://ebumna.net/
-// @version      6.16i
+// @version      6.18
 // @license      MIT
-// @description  Hides watched videos from extension. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
+// @description  Hides watched videos (and shorts) from your YouTube subscriptions page. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Ev Haus
 // @author       netjeff
 // @author       actionless
@@ -17,6 +17,8 @@
 // @require      https://openuserjs.org/src/libs/sizzle/GM_config.js
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM.getValue
+// @grant        GM.setValue
 // @updateURL    https://github.com/Ratithoglys/misc_userscripts/raw/refs/heads/main/youtubehistory.user.js
 // @downloadURL  https://github.com/Ratithoglys/misc_userscripts/raw/refs/heads/main/youtubehistory.user.js
 // ==/UserScript==
@@ -38,6 +40,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 	const DEBUG = false;
 
 	// Needed to bypass YouTube's Trusted Types restrictions, ie.
+	// Uncaught TypeError: Failed to set the 'innerHTML' property on 'Element': This document requires 'TrustedHTML' assignment.
 	if (
 		typeof trustedTypes !== 'undefined' &&
 		trustedTypes.defaultPolicy === null
@@ -59,7 +62,6 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		events: {
 			save() {
 				this.close();
-				run();
 			},
 		},
 		fields: {
@@ -89,6 +91,40 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		if (DEBUG) console.debug('[YT-HWV]', msgs);
 	};
 
+	// Storage helpers — prefer GM storage (persists across YouTube's
+	// localStorage clears) but fall back to localStorage if GM APIs
+	// are unavailable.
+	const stateGet = async (key, defaultValue) => {
+		try {
+			return GM_getValue(key, defaultValue);
+		} catch (_) {
+			/* fall through */
+		}
+		try {
+			return await GM.getValue(key, defaultValue);
+		} catch (_) {
+			/* fall through */
+		}
+		return localStorage.getItem(key) ?? defaultValue;
+	};
+	const stateSet = async (key, value) => {
+		try {
+			GM_setValue(key, value);
+			return;
+		} catch (_) {
+			/* fall through */
+		}
+		try {
+			await GM.setValue(key, value);
+			return;
+		} catch (_) {
+			/* fall through */
+		}
+		localStorage.setItem(key, value);
+	};
+
+	// GreaseMonkey no longer supports GM_addStyle. So we have to define
+	// our own polyfill here
 	const addStyle = (aCss) => {
 		const head = document.getElementsByTagName('head')[0];
 		if (head) {
@@ -101,18 +137,17 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		return null;
 	};
 
-    // add to queue / watch later
 	addStyle(`
 .ytThumbnailHoverOverlayToggleActionsViewModelHost { top:0; }
 
 .YT-HWV-WATCHED-HIDDEN { display: none !important }
 .YT-HWV-WATCHED-DIMMED { opacity: 0.3 }
 
-.YT-HWV-HISTORY-HIDDEN { display: none !important }
-.YT-HWV-HISTORY-DIMMED { background-color: rgba(255,255,0,0.2); opacity: 0.3 }
-
 .YT-HWV-SHORTS-HIDDEN { display: none !important }
 .YT-HWV-SHORTS-DIMMED { opacity: 0.3 }
+
+.YT-HWV-HISTORY-HIDDEN { display: none !important }
+.YT-HWV-HISTORY-DIMMED { background-color: rgba(255,255,0,0.2); opacity: 0.3 }
 
 .YT-HWV-UPCOMING-HIDDEN { display: none !important }
 .YT-HWV-UPCOMING-DIMMED { background-color: rgba(0,200,255,0.2); opacity: 0.3 }
@@ -278,7 +313,9 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		const watched = document.querySelectorAll(
 			[
 				'.ytd-thumbnail-overlay-resume-playback-renderer',
+				// Recommended videos on the right-hand sidebar when watching a video
 				'.ytThumbnailOverlayProgressBarHostWatchedProgressBarSegment',
+				// 2025-02-01 Update
 				'.ytThumbnailOverlayProgressBarHostWatchedProgressBarSegmentModern',
 			].join(','),
 		);
@@ -352,7 +389,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 			)
 			.forEach((child) => {
 				const container = child.closest('ytd-video-renderer');
-				shortsContainers.push(container);
+				if (container) shortsContainers.push(container);
 			});
 
 		logDebug(`Found ${shortsContainers.length} shorts container elements`);
@@ -457,6 +494,8 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 			youtubeSection = 'playlist';
 		} else if (href.includes('/results?')) {
 			youtubeSection = 'search';
+		} else if (href.includes('/hashtag/')) {
+			youtubeSection = 'hashtag';
 		}
 
 		return youtubeSection;
@@ -464,364 +503,387 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 	// ===========================================================
 
-	const updateClassOnWatchedItems = () => {
-		// Remove existing classes
-		document.querySelectorAll('.YT-HWV-WATCHED-DIMMED').forEach((el) => {
-			el.classList.remove('YT-HWV-WATCHED-DIMMED');
-		});
-		document.querySelectorAll('.YT-HWV-WATCHED-HIDDEN').forEach((el) => {
-			el.classList.remove('YT-HWV-WATCHED-HIDDEN');
-		});
+	const updateClassOnWatchedItems = async () => {
+		try {
+			// Remove existing classes
+			document.querySelectorAll('.YT-HWV-WATCHED-DIMMED').forEach((el) => {
+				el.classList.remove('YT-HWV-WATCHED-DIMMED');
+			});
+			document.querySelectorAll('.YT-HWV-WATCHED-HIDDEN').forEach((el) => {
+				el.classList.remove('YT-HWV-WATCHED-HIDDEN');
+			});
 
-		// If we're on the History page -- do nothing. We don't want to hide
-		// watched videos here.
-		if (window.location.href.indexOf('/feed/history') >= 0) return;
+			// If we're on the History page -- do nothing. We don't want to hide
+			// watched videos here.
+			if (window.location.href.indexOf('/feed/history') >= 0) return;
 
-		const section = determineYoutubeSection();
-		const state = localStorage[`YTHWV_STATE_${section}`];
+			const section = determineYoutubeSection();
+			const state = await stateGet(`YTHWV_STATE_${section}`);
 
-		findWatchedElements().forEach((item, _i) => {
-			let watchedItem;
-			let dimmedItem;
+			findWatchedElements().forEach((item, _i) => {
+				let watchedItem;
+				let dimmedItem;
 
-			// "Subscription" section needs us to hide the "#contents",
-			// but in the "Trending" section, that class will hide everything.
-			// So there, we need to hide the "ytd-video-renderer"
-			if (section === 'subscriptions') {
-				// For rows, hide the row and the header too. We can't hide
-				// their entire parent because then we'll get the infinite
-				// page loader to load forever.
-				watchedItem =
-					// Grid item
-					item.closest('.ytd-grid-renderer') ||
-					item.closest('.ytd-item-section-renderer') ||
-					item.closest('.ytd-rich-grid-row') ||
-					item.closest('.ytd-rich-grid-renderer') ||
-					// List item
-					item.closest('#grid-container');
+				// "Subscription" section needs us to hide the "#contents",
+				// but in the "Trending" section, that class will hide everything.
+				// So there, we need to hide the "ytd-video-renderer"
+				if (section === 'subscriptions') {
+					// For rows, hide the row and the header too. We can't hide
+					// their entire parent because then we'll get the infinite
+					// page loader to load forever.
+					watchedItem =
+						// Grid item
+						item.closest('.ytd-grid-renderer') ||
+						item.closest('.ytd-item-section-renderer') ||
+						item.closest('.ytd-rich-grid-row') ||
+						item.closest('.ytd-rich-grid-renderer') ||
+						// List item
+						item.closest('#grid-container');
 
-				// If we're hiding the .ytd-item-section-renderer element, we need to give it
-				// some extra spacing otherwise we'll get stuck in infinite page loading
-				if (watchedItem?.classList.contains('ytd-item-section-renderer')) {
-					watchedItem
-						.closest('ytd-item-section-renderer')
-						.classList.add('YT-HWV-HIDDEN-ROW-PARENT');
+					// If we're hiding the .ytd-item-section-renderer element, we need to give it
+					// some extra spacing otherwise we'll get stuck in infinite page loading
+					if (watchedItem?.classList.contains('ytd-item-section-renderer')) {
+						watchedItem
+							.closest('ytd-item-section-renderer')
+							.classList.add('YT-HWV-HIDDEN-ROW-PARENT');
+					}
+				} else if (section === 'playlist') {
+					watchedItem = item.closest('ytd-playlist-video-renderer');
+				} else if (section === 'watch') {
+					watchedItem =
+						item.closest('ytd-compact-video-renderer') ||
+						// Recommended videos on the right-hand sidebar when watching a video (#370)
+						item.closest('yt-lockup-view-model');
+
+					// Don't hide video if it's going to play next.
+					//
+					// If there is no watchedItem - we probably got
+					// `ytd-playlist-panel-video-renderer`:
+					// let's also ignore it as in case of shuffle enabled
+					// we could accidentially hide the item which gonna play next.
+					if (watchedItem?.closest('ytd-compact-autoplay-renderer')) {
+						watchedItem = null;
+					}
+
+					// For playlist items, we never hide them, but we will dim
+					// them even if current mode is to hide rather than dim.
+					const watchedItemInPlaylist = item.closest(
+						'ytd-playlist-panel-video-renderer',
+					);
+					if (!watchedItem && watchedItemInPlaylist) {
+						dimmedItem = watchedItemInPlaylist;
+					}
+				} else {
+					// For home page and other areas
+					watchedItem =
+						item.closest('ytd-rich-item-renderer') ||
+						item.closest('ytd-video-renderer') ||
+						item.closest('ytd-grid-video-renderer');
 				}
-			} else if (section === 'playlist') {
-				watchedItem = item.closest('ytd-playlist-video-renderer');
-			} else if (section === 'watch') {
-				watchedItem =
-					item.closest('ytd-compact-video-renderer') ||
-					// Recommended videos on the right-hand sidebar when watching a video (#370)
-					item.closest('yt-lockup-view-model');
 
-				// Don't hide video if it's going to play next.
-				//
-				// If there is no watchedItem - we probably got
-				// `ytd-playlist-panel-video-renderer`:
-				// let's also ignore it as in case of shuffle enabled
-				// we could accidentially hide the item which gonna play next.
-				if (watchedItem?.closest('ytd-compact-autoplay-renderer')) {
-					watchedItem = null;
+				if (watchedItem) {
+					// Add current class
+					if (state === 'dimmed') {
+						watchedItem.classList.add('YT-HWV-WATCHED-DIMMED');
+					} else if (state === 'hidden') {
+						watchedItem.classList.add('YT-HWV-WATCHED-HIDDEN');
+					}
 				}
 
-				// For playlist items, we never hide them, but we will dim
-				// them even if current mode is to hide rather than dim.
-				const watchedItemInPlaylist = item.closest(
-					'ytd-playlist-panel-video-renderer',
-				);
-				if (!watchedItem && watchedItemInPlaylist) {
-					dimmedItem = watchedItemInPlaylist;
+				if (dimmedItem && (state === 'dimmed' || state === 'hidden')) {
+					dimmedItem.classList.add('YT-HWV-WATCHED-DIMMED');
 				}
-			} else {
-				// For home page and other areas
-				watchedItem =
-					item.closest('ytd-rich-item-renderer') ||
-					item.closest('ytd-video-renderer') ||
-					item.closest('ytd-grid-video-renderer');
-			}
+			});
+		} catch (error) {
+			console.error('[YT-HWV]', error);
+		}
+	};
 
-			if (watchedItem) {
+	// ===========================================================
+
+	const updateClassOnHistoryItems = async () => {
+		try {
+            // Remove existing classes
+            document
+                .querySelectorAll('.YT-HWV-HISTORY-DIMMED')
+                .forEach((el) => el.classList.remove('YT-HWV-HISTORY-DIMMED'));
+            document
+                .querySelectorAll('.YT-HWV-HISTORY-HIDDEN')
+                .forEach((el) => el.classList.remove('YT-HWV-HISTORY-HIDDEN'));
+
+            // If we're on the History page -- do nothing. We don't want to hide
+            // watched videos here.
+            if (window.location.href.indexOf('/feed/history') >= 0) return;
+
+            const section = determineYoutubeSection();
+            const state = await stateGet(`YTHWV_STATE_HISTORY_${section}`);
+
+
+            findHistoryElements().forEach((item, _i) => {
+                let watchedItem;
+                let dimmedItem;
+
+                // "Subscription" section needs us to hide the "#contents",
+                // but in the "Trending" section, that class will hide everything.
+                // So there, we need to hide the "ytd-video-renderer"
+                if (section === 'subscriptions') {
+                    // For rows, hide the row and the header too. We can't hide
+                    // their entire parent because then we'll get the infinite
+                    // page loader to load forever.
+                    watchedItem =
+                        // Grid item
+                        item.closest('.ytd-grid-renderer') ||
+                        item.closest('.ytd-item-section-renderer') ||
+                        item.closest('.ytd-rich-grid-row') ||
+                        item.closest('.ytd-rich-grid-renderer') ||
+                        // List item
+                        item.closest('#grid-container');
+
+                    // If we're hiding the .ytd-item-section-renderer element, we need to give it
+                    // some extra spacing otherwise we'll get stuck in infinite page loading
+                    if (watchedItem && watchedItem.classList.contains('ytd-item-section-renderer')) {
+                        watchedItem
+                            .closest('ytd-item-section-renderer')
+                            .classList.add('YT-HWV-HIDDEN-ROW-PARENT');
+                    }
+                } else if (section === 'playlist') {
+                    watchedItem = item.closest('ytd-playlist-video-renderer');
+                } else if (section === 'watch') {
+                    watchedItem =
+                        item.closest('ytd-compact-video-renderer') ||
+                        // Recommended videos on the right-hand sidebar when watching a video (#370)
+                        item.closest('yt-lockup-view-model');
+
+                    // Don't hide video if it's going to play next.
+                    //
+                    // If there is no watchedItem - we probably got
+                    // `ytd-playlist-panel-video-renderer`:
+                    // let's also ignore it as in case of shuffle enabled
+                    // we could accidentially hide the item which gonna play next.
+                    if (watchedItem?.closest('ytd-compact-autoplay-renderer')) {
+                        watchedItem = null;
+                    }
+
+                    // For playlist items, we never hide them, but we will dim
+                    // them even if current mode is to hide rather than dim.
+                    const watchedItemInPlaylist = item.closest(
+                        'ytd-playlist-panel-video-renderer',
+                    );
+                    if (!watchedItem && watchedItemInPlaylist) {
+                        dimmedItem = watchedItemInPlaylist;
+                    }
+                } else {
+                    // For home page and other areas
+                    watchedItem =
+                        item.closest('ytd-rich-item-renderer') ||
+                        item.closest('ytd-video-renderer') ||
+                        item.closest('ytd-grid-video-renderer');
+                }
+
+                if (watchedItem) {
+                    // Add current class
+                    if (state === 'dimmed') {
+                        watchedItem.classList.add('YT-HWV-HISTORY-DIMMED');
+                    } else if (state === 'hidden') {
+                        watchedItem.classList.add('YT-HWV-HISTORY-HIDDEN');
+                    }
+                }
+
+                if (dimmedItem && (state === 'dimmed' || state === 'hidden')) {
+                    dimmedItem.classList.add('YT-HWV-HISTORY-DIMMED');
+                }
+            });
+		} catch (error) {
+			console.error('[YT-HWV]', error);
+		}
+	};
+
+	// ===========================================================
+
+	const updateClassOnShortsItems = async () => {
+		try {
+			const section = determineYoutubeSection();
+
+			document.querySelectorAll('.YT-HWV-SHORTS-DIMMED').forEach((el) => {
+				el.classList.remove('YT-HWV-SHORTS-DIMMED');
+			});
+			document.querySelectorAll('.YT-HWV-SHORTS-HIDDEN').forEach((el) => {
+				el.classList.remove('YT-HWV-SHORTS-HIDDEN');
+			});
+
+			const state = await stateGet(`YTHWV_STATE_SHORTS_${section}`);
+
+			const shortsContainers = findShortsContainers();
+
+			shortsContainers.forEach((item) => {
 				// Add current class
 				if (state === 'dimmed') {
-					watchedItem.classList.add('YT-HWV-WATCHED-DIMMED');
+					item.classList.add('YT-HWV-SHORTS-DIMMED');
 				} else if (state === 'hidden') {
-					watchedItem.classList.add('YT-HWV-WATCHED-HIDDEN');
+					item.classList.add('YT-HWV-SHORTS-HIDDEN');
 				}
-			}
-
-			if (dimmedItem && (state === 'dimmed' || state === 'hidden')) {
-				dimmedItem.classList.add('YT-HWV-WATCHED-DIMMED');
-			}
-		});
+			});
+		} catch (error) {
+			console.error('[YT-HWV]', error);
+		}
 	};
 
 	// ===========================================================
 
-	const updateClassOnHistoryItems = () => {
+	const updateClassOnUpcomingItems = async () => {
+        try {
+            // Remove existing classes
+            document
+                .querySelectorAll('.YT-HWV-UPCOMING-DIMMED')
+                .forEach((el) => el.classList.remove('YT-HWV-UPCOMING-DIMMED'));
+            document
+                .querySelectorAll('.YT-HWV-UPCOMING-HIDDEN')
+                .forEach((el) => el.classList.remove('YT-HWV-UPCOMING-HIDDEN'));
 
-		// Remove existing classes
-		document
-			.querySelectorAll('.YT-HWV-HISTORY-DIMMED')
-			.forEach((el) => el.classList.remove('YT-HWV-HISTORY-DIMMED'));
-		document
-			.querySelectorAll('.YT-HWV-HISTORY-HIDDEN')
-			.forEach((el) => el.classList.remove('YT-HWV-HISTORY-HIDDEN'));
+            // If we're on the History page -- do nothing. We don't want to hide
+            // watched videos here.
+            if (window.location.href.indexOf('/feed/history') >= 0) return;
 
-		// If we're on the History page -- do nothing. We don't want to hide
-		// watched videos here.
-		if (window.location.href.indexOf('/feed/history') >= 0) return;
-
-		const section = determineYoutubeSection();
-		const state = localStorage[`YTHWV_STATE_HISTORY_${section}`];
+            const section = determineYoutubeSection();
+            const state = await stateGet(`YTHWV_STATE_UPCOMING_${section}`);
 
 
-		findHistoryElements().forEach((item, _i) => {
-			let watchedItem;
-			let dimmedItem;
+            findUpcomingElements().forEach((item, _i) => {
+                let upcomingItem;
+                let dimmedItem;
 
-			// "Subscription" section needs us to hide the "#contents",
-			// but in the "Trending" section, that class will hide everything.
-			// So there, we need to hide the "ytd-video-renderer"
-			if (section === 'subscriptions') {
-				// For rows, hide the row and the header too. We can't hide
-				// their entire parent because then we'll get the infinite
-				// page loader to load forever.
-				watchedItem =
-					// Grid item
-					item.closest('.ytd-grid-renderer') ||
-					item.closest('.ytd-item-section-renderer') ||
-					item.closest('.ytd-rich-grid-row') ||
-					item.closest('.ytd-rich-grid-renderer') ||
-					// List item
-					item.closest('#grid-container');
+                // "Subscription" section needs us to hide the "#contents",
+                // but in the "Trending" section, that class will hide everything.
+                // So there, we need to hide the "ytd-video-renderer"
+                if (section === 'subscriptions') {
+                    // For rows, hide the row and the header too. We can't hide
+                    // their entire parent because then we'll get the infinite
+                    // page loader to load forever.
+                    upcomingItem =
+                        // Grid item
+                        item.closest('.ytd-grid-renderer') ||
+                        item.closest('.ytd-item-section-renderer') ||
+                        item.closest('.ytd-rich-grid-row') ||
+                        item.closest('.ytd-rich-grid-renderer') ||
+                        // List item
+                        item.closest('#grid-container');
 
-				// If we're hiding the .ytd-item-section-renderer element, we need to give it
-				// some extra spacing otherwise we'll get stuck in infinite page loading
-				if (watchedItem && watchedItem.classList.contains('ytd-item-section-renderer')) {
-					watchedItem
-						.closest('ytd-item-section-renderer')
-						.classList.add('YT-HWV-HIDDEN-ROW-PARENT');
-				}
-			} else if (section === 'playlist') {
-				watchedItem = item.closest('ytd-playlist-video-renderer');
-			} else if (section === 'watch') {
-				watchedItem =
-					item.closest('ytd-compact-video-renderer') ||
-					// Recommended videos on the right-hand sidebar when watching a video (#370)
-					item.closest('yt-lockup-view-model');
+                    // If we're hiding the .ytd-item-section-renderer element, we need to give it
+                    // some extra spacing otherwise we'll get stuck in infinite page loading
+                    if (upcomingItem && upcomingItem.classList.contains('ytd-item-section-renderer')) {
+                        upcomingItem
+                            .closest('ytd-item-section-renderer')
+                            .classList.add('YT-HWV-HIDDEN-ROW-PARENT');
+                    }
+                } else if (section === 'playlist') {
+                    upcomingItem = item.closest('ytd-playlist-video-renderer');
+                } else if (section === 'watch') {
+                    upcomingItem =
+                        item.closest('ytd-compact-video-renderer') ||
+                        // Recommended videos on the right-hand sidebar when watching a video (#370)
+                        item.closest('yt-lockup-view-model');
 
-				// Don't hide video if it's going to play next.
-				//
-				// If there is no watchedItem - we probably got
-				// `ytd-playlist-panel-video-renderer`:
-				// let's also ignore it as in case of shuffle enabled
-				// we could accidentially hide the item which gonna play next.
-				if (watchedItem?.closest('ytd-compact-autoplay-renderer')) {
-					watchedItem = null;
-				}
+                    // Don't hide video if it's going to play next.
+                    //
+                    // If there is no watchedItem - we probably got
+                    // `ytd-playlist-panel-video-renderer`:
+                    // let's also ignore it as in case of shuffle enabled
+                    // we could accidentially hide the item which gonna play next.
+                    if (upcomingItem?.closest('ytd-compact-autoplay-renderer')) {
+                        upcomingItem = null;
+                    }
 
-				// For playlist items, we never hide them, but we will dim
-				// them even if current mode is to hide rather than dim.
-				const watchedItemInPlaylist = item.closest(
-					'ytd-playlist-panel-video-renderer',
-				);
-				if (!watchedItem && watchedItemInPlaylist) {
-					dimmedItem = watchedItemInPlaylist;
-				}
-			} else {
-				// For home page and other areas
-				watchedItem =
-					item.closest('ytd-rich-item-renderer') ||
-					item.closest('ytd-video-renderer') ||
-					item.closest('ytd-grid-video-renderer');
-			}
+                    // For playlist items, we never hide them, but we will dim
+                    // them even if current mode is to hide rather than dim.
+                    const upcomingItemInPlaylist = item.closest(
+                        'ytd-playlist-panel-video-renderer',
+                    );
+                    if (!upcomingItem && upcomingItemInPlaylist) {
+                        dimmedItem = upcomingItemInPlaylist;
+                    }
+                } else {
+                    // For home page and other areas
+                    upcomingItem =
+                        item.closest('ytd-rich-item-renderer') ||
+                        item.closest('ytd-video-renderer') ||
+                        item.closest('ytd-grid-video-renderer');
+                }
 
-			if (watchedItem) {
-				// Add current class
-				if (state === 'dimmed') {
-					watchedItem.classList.add('YT-HWV-HISTORY-DIMMED');
-				} else if (state === 'hidden') {
-					watchedItem.classList.add('YT-HWV-HISTORY-HIDDEN');
-				}
-			}
+                if (upcomingItem) {
+                    // Add current class
+                    if (state === 'dimmed') {
+                        upcomingItem.classList.add('YT-HWV-UPCOMING-DIMMED');
+                    } else if (state === 'hidden') {
+                        upcomingItem.classList.add('YT-HWV-UPCOMING-HIDDEN');
+                    }
+                }
 
-			if (dimmedItem && (state === 'dimmed' || state === 'hidden')) {
-				dimmedItem.classList.add('YT-HWV-HISTORY-DIMMED');
-			}
-		});
+                if (dimmedItem && (state === 'dimmed' || state === 'hidden')) {
+                    dimmedItem.classList.add('YT-HWV-UPCOMING-DIMMED');
+                }
+            });
+		} catch (error) {
+			console.error('[YT-HWV]', error);
+		}
 	};
 
 	// ===========================================================
 
-	const updateClassOnShortsItems = () => {
-		const section = determineYoutubeSection();
+	const updateClassOnMixesItems = async () => {
+        try {
+            const section = determineYoutubeSection();
 
-		document.querySelectorAll('.YT-HWV-SHORTS-DIMMED').forEach((el) => {
-			el.classList.remove('YT-HWV-SHORTS-DIMMED');
-		});
-		document.querySelectorAll('.YT-HWV-SHORTS-HIDDEN').forEach((el) => {
-			el.classList.remove('YT-HWV-SHORTS-HIDDEN');
-		});
+            document
+                .querySelectorAll('.YT-HWV-MIXES-DIMMED')
+                .forEach((el) => el.classList.remove('YT-HWV-MIXES-DIMMED'));
+            document
+                .querySelectorAll('.YT-HWV-MIXES-HIDDEN')
+                .forEach((el) => el.classList.remove('YT-HWV-MIXES-HIDDEN'));
 
-		const state = localStorage[`YTHWV_STATE_SHORTS_${section}`];
+            const state = await stateGet(`YTHWV_STATE_MIXES_${section}`);
 
-		const shortsContainers = findShortsContainers();
+            const mixesItems = findMixesElements();
 
-		shortsContainers.forEach((item) => {
-			// Add current class
-			if (state === 'dimmed') {
-				item.classList.add('YT-HWV-SHORTS-DIMMED');
-			} else if (state === 'hidden') {
-				item.classList.add('YT-HWV-SHORTS-HIDDEN');
-			}
-		});
+            mixesItems.forEach((item) => {
+                // Add current class
+                if (state === 'dimmed') {
+                    item.classList.add('YT-HWV-MIXES-DIMMED');
+                } else if (state === 'hidden') {
+                    item.classList.add('YT-HWV-MIXES-HIDDEN');
+                }
+            });
+		} catch (error) {
+			console.error('[YT-HWV]', error);
+		}
 	};
 
 	// ===========================================================
 
-	const updateClassOnUpcomingItems = () => {
-		// Remove existing classes
-		document
-			.querySelectorAll('.YT-HWV-UPCOMING-DIMMED')
-			.forEach((el) => el.classList.remove('YT-HWV-UPCOMING-DIMMED'));
-		document
-			.querySelectorAll('.YT-HWV-UPCOMING-HIDDEN')
-			.forEach((el) => el.classList.remove('YT-HWV-UPCOMING-HIDDEN'));
+	const updateClassOnMembersOnlyItems = async () => {
+        try {
+            const section = determineYoutubeSection();
 
-		// If we're on the History page -- do nothing. We don't want to hide
-		// watched videos here.
-		if (window.location.href.indexOf('/feed/history') >= 0) return;
+            document
+                .querySelectorAll('.YT-HWV-MEMBERS-ONLY-DIMMED')
+                .forEach((el) => el.classList.remove('YT-HWV-MEMBERS-ONLY-DIMMED'));
+            document
+                .querySelectorAll('.YT-HWV-MEMBERS-ONLY-HIDDEN')
+                .forEach((el) => el.classList.remove('YT-HWV-MEMBERS-ONLY-HIDDEN'));
 
-		const section = determineYoutubeSection();
-		const state = localStorage[`YTHWV_STATE_UPCOMING_${section}`];
+            const state = await stateGet(`YTHWV_STATE_MEMBERS_ONLY_${section}`);
 
+            const membersOnlyItems = findMembersOnlyElements();
 
-		findUpcomingElements().forEach((item, _i) => {
-			let upcomingItem;
-			let dimmedItem;
-
-			// "Subscription" section needs us to hide the "#contents",
-			// but in the "Trending" section, that class will hide everything.
-			// So there, we need to hide the "ytd-video-renderer"
-			if (section === 'subscriptions') {
-				// For rows, hide the row and the header too. We can't hide
-				// their entire parent because then we'll get the infinite
-				// page loader to load forever.
-				upcomingItem =
-					// Grid item
-					item.closest('.ytd-grid-renderer') ||
-					item.closest('.ytd-item-section-renderer') ||
-					item.closest('.ytd-rich-grid-row') ||
-					item.closest('.ytd-rich-grid-renderer') ||
-					// List item
-					item.closest('#grid-container');
-
-				// If we're hiding the .ytd-item-section-renderer element, we need to give it
-				// some extra spacing otherwise we'll get stuck in infinite page loading
-				if (upcomingItem && upcomingItem.classList.contains('ytd-item-section-renderer')) {
-					upcomingItem
-						.closest('ytd-item-section-renderer')
-						.classList.add('YT-HWV-HIDDEN-ROW-PARENT');
-				}
-			} else if (section === 'playlist') {
-				upcomingItem = item.closest('ytd-playlist-video-renderer');
-			} else if (section === 'watch') {
-				upcomingItem =
-					item.closest('ytd-compact-video-renderer') ||
-					// Recommended videos on the right-hand sidebar when watching a video (#370)
-					item.closest('yt-lockup-view-model');
-
-				// Don't hide video if it's going to play next.
-				//
-				// If there is no watchedItem - we probably got
-				// `ytd-playlist-panel-video-renderer`:
-				// let's also ignore it as in case of shuffle enabled
-				// we could accidentially hide the item which gonna play next.
-				if (upcomingItem?.closest('ytd-compact-autoplay-renderer')) {
-					upcomingItem = null;
-				}
-
-				// For playlist items, we never hide them, but we will dim
-				// them even if current mode is to hide rather than dim.
-				const upcomingItemInPlaylist = item.closest(
-					'ytd-playlist-panel-video-renderer',
-				);
-				if (!upcomingItem && upcomingItemInPlaylist) {
-					dimmedItem = upcomingItemInPlaylist;
-				}
-			} else {
-				// For home page and other areas
-				upcomingItem =
-					item.closest('ytd-rich-item-renderer') ||
-					item.closest('ytd-video-renderer') ||
-					item.closest('ytd-grid-video-renderer');
-			}
-
-			if (upcomingItem) {
-				// Add current class
-				if (state === 'dimmed') {
-					upcomingItem.classList.add('YT-HWV-UPCOMING-DIMMED');
-				} else if (state === 'hidden') {
-					upcomingItem.classList.add('YT-HWV-UPCOMING-HIDDEN');
-				}
-			}
-
-			if (dimmedItem && (state === 'dimmed' || state === 'hidden')) {
-				dimmedItem.classList.add('YT-HWV-UPCOMING-DIMMED');
-			}
-		});
-	};
-
-	// ===========================================================
-
-	const updateClassOnMixesItems = () => {
-		const section = determineYoutubeSection();
-
-		document
-			.querySelectorAll('.YT-HWV-MIXES-DIMMED')
-			.forEach((el) => el.classList.remove('YT-HWV-MIXES-DIMMED'));
-		document
-			.querySelectorAll('.YT-HWV-MIXES-HIDDEN')
-			.forEach((el) => el.classList.remove('YT-HWV-MIXES-HIDDEN'));
-
-		const state = localStorage[`YTHWV_STATE_MIXES_${section}`];
-
-		const mixesItems = findMixesElements();
-
-		mixesItems.forEach((item) => {
-			// Add current class
-			if (state === 'dimmed') {
-				item.classList.add('YT-HWV-MIXES-DIMMED');
-			} else if (state === 'hidden') {
-				item.classList.add('YT-HWV-MIXES-HIDDEN');
-			}
-		});
-	};
-
-	// ===========================================================
-
-	const updateClassOnMembersOnlyItems = () => {
-		const section = determineYoutubeSection();
-
-		document
-			.querySelectorAll('.YT-HWV-MEMBERS-ONLY-DIMMED')
-			.forEach((el) => el.classList.remove('YT-HWV-MEMBERS-ONLY-DIMMED'));
-		document
-			.querySelectorAll('.YT-HWV-MEMBERS-ONLY-HIDDEN')
-			.forEach((el) => el.classList.remove('YT-HWV-MEMBERS-ONLY-HIDDEN'));
-
-		const state = localStorage[`YTHWV_STATE_MEMBERS_ONLY_${section}`];
-
-		const membersOnlyItems = findMembersOnlyElements();
-
-		membersOnlyItems.forEach((item) => {
-			if (state === 'dimmed') {
-				item.classList.add('YT-HWV-MEMBERS-ONLY-DIMMED');
-			} else if (state === 'hidden') {
-				item.classList.add('YT-HWV-MEMBERS-ONLY-HIDDEN');
-			}
-		});
+            membersOnlyItems.forEach((item) => {
+                if (state === 'dimmed') {
+                    item.classList.add('YT-HWV-MEMBERS-ONLY-DIMMED');
+                } else if (state === 'hidden') {
+                    item.classList.add('YT-HWV-MEMBERS-ONLY-HIDDEN');
+                }
+            });
+		} catch (error) {
+			console.error('[YT-HWV]', error);
+		}
 	};
 
 	// ===========================================================
@@ -841,279 +903,297 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 			.filter(name => !/^\d+\s+more$/i.test(name)); // Exclut les "3 more", etc.
 	};
 
-    const updateClassOnBlockedChannelItems = () => {
-		// Do nothing if empty list
-		const BLOCKED_CHANNELS = getBlockedChannels();
-		if (!BLOCKED_CHANNELS || BLOCKED_CHANNELS.length === 0) return;
+    const updateClassOnBlockedChannelItems = async () => {
+        try {
+    		// Do nothing if empty list
+    		const BLOCKED_CHANNELS = getBlockedChannels();
+    		if (!BLOCKED_CHANNELS || BLOCKED_CHANNELS.length === 0) return;
 
-		// Remove existing classes
-		document
-			.querySelectorAll('.YT-HWV-BLOCKED-CHANNEL-DIMMED')
-			.forEach((el) => el.classList.remove('YT-HWV-BLOCKED-CHANNEL-DIMMED'));
-		document
-			.querySelectorAll('.YT-HWV-BLOCKED-CHANNEL-HIDDEN')
-			.forEach((el) => el.classList.remove('YT-HWV-BLOCKED-CHANNEL-HIDDEN'));
+    		// Remove existing classes
+    		document
+    			.querySelectorAll('.YT-HWV-BLOCKED-CHANNEL-DIMMED')
+    			.forEach((el) => el.classList.remove('YT-HWV-BLOCKED-CHANNEL-DIMMED'));
+    		document
+    			.querySelectorAll('.YT-HWV-BLOCKED-CHANNEL-HIDDEN')
+    			.forEach((el) => el.classList.remove('YT-HWV-BLOCKED-CHANNEL-HIDDEN'));
 
-		// If we're on the History page -- do nothing. We don't want to hide
-		// watched videos here.
-		if (window.location.href.indexOf('/feed/history') >= 0) return;
+    		// If we're on the History page -- do nothing. We don't want to hide
+    		// watched videos here.
+    		if (window.location.href.indexOf('/feed/history') >= 0) return;
 
-		const section = determineYoutubeSection();
-		const state = localStorage[`YTHWV_STATE_BLOCKED_CHANNELS_${section}`];
+    		const section = determineYoutubeSection();
+    		const state = await stateGet(`YTHWV_STATE_BLOCKED_CHANNELS_${section}`);
 
-		// Si l'état est "normal", on ne fait rien
-		if (state === 'normal' || !state) {
-			return;
-		}
+    		// Si l'état est "normal", on ne fait rien
+    		if (state === 'normal' || !state) {
+    			return;
+    		}
 
-		// Sélecteur général pour toutes les vidéos ET l'en-tête de chaîne (nouveau)
-		const videoItems = document.querySelectorAll([
-            'ytd-rich-item-renderer',
-            'ytd-video-renderer',
-            'ytd-grid-video-renderer',
-            'ytd-compact-video-renderer',
-            'ytd-reel-item-renderer',
-            'yt-page-header-renderer',
-            'ytd-compact-movie-renderer',
-            'yt-lockup-view-model'
-        ].join(','));
-
-		videoItems.forEach(item => {
-			// 1. Recherche standard pour les vidéos
-            // CORRECTION: Utilisation directe de 'a' pour éviter les bugs si YouTube renomme ses classes CSS
-			let channelLink = item.querySelector('ytd-channel-name a, yt-content-metadata-view-model a');
-
-            // 2. Recherche spécifique pour le nouvel en-tête de chaîne
-            if (!channelLink && item.tagName.toLowerCase() === 'yt-page-header-renderer') {
-                channelLink = item.querySelector('yt-dynamic-text-view-model h1');
-            }
-
-			if (channelLink) {
-				const rawChannelName = channelLink.textContent.trim();
-				const parsedChannelNames = getChannelNamesFromString(rawChannelName);
-
-				// Vérifie si AU MOINS UNE des chaînes extraites est dans la liste de blocage
-				const isBlocked = parsedChannelNames.some(name => BLOCKED_CHANNELS.includes(name));
-
-				if (isBlocked) {
-					if (state === 'dimmed') {
-						item.classList.add('YT-HWV-BLOCKED-CHANNEL-DIMMED');
-					} else if (state === 'hidden') {
-						item.classList.add('YT-HWV-BLOCKED-CHANNEL-HIDDEN');
-					}
-				}
-			}
-		});
-	};
-
-	const injectBlockChannelButtons = () => {
-		// CORRECTION 6.16: Ajout de yt-page-header-renderer
-		const elements = document.querySelectorAll(
-			[
+    		// Sélecteur général pour toutes les vidéos ET l'en-tête de chaîne (nouveau)
+    		const videoItems = document.querySelectorAll([
                 'ytd-rich-item-renderer',
                 'ytd-video-renderer',
                 'ytd-grid-video-renderer',
                 'ytd-compact-video-renderer',
                 'ytd-reel-item-renderer',
-                'ytd-c4-tabbed-header-renderer',
-                'ytd-channel-header-renderer',
-                'yt-page-header-renderer' // <--- Le conteneur fourni dans votre HTML
-            ].join(',')
-		);
+                'yt-page-header-renderer',
+                'ytd-compact-movie-renderer',
+                'yt-lockup-view-model'
+            ].join(','));
 
-		elements.forEach(item => {
-			let targetEl = null;
+    		videoItems.forEach(item => {
+    			// 1. Recherche standard pour les vidéos
+                // CORRECTION: Utilisation directe de 'a' pour éviter les bugs si YouTube renomme ses classes CSS
+    			let channelLink = item.querySelector('ytd-channel-name a, yt-content-metadata-view-model a');
 
-            // Cas 1 : Vidéos Standards
-			const channelNameEl = item.querySelector('ytd-channel-name, yt-content-metadata-view-model');
-            if (channelNameEl) {
-                 targetEl = channelNameEl.querySelector('a, .yt-core-attributed-string__link, yt-formatted-string, #text');
-            }
-
-            // Cas 2 : Nouvel En-tête de chaîne (Votre cas spécifique)
-            // On cherche le H1 dans le View Model
-            if (item.tagName.toLowerCase() === 'yt-page-header-renderer') {
-                const titleH1 = item.querySelector('yt-dynamic-text-view-model h1');
-                if (titleH1) {
-                    targetEl = titleH1; // On insérera DANS le h1, au début
+                // 2. Recherche spécifique pour le nouvel en-tête de chaîne
+                if (!channelLink && item.tagName.toLowerCase() === 'yt-page-header-renderer') {
+                    channelLink = item.querySelector('yt-dynamic-text-view-model h1');
                 }
-            }
 
-			// Si rien trouvé ou si le bouton existe déjà, on arrête
-            // Note: Pour le H1, on vérifie si le bouton est DANS le H1
-			if (!targetEl || (targetEl.querySelector && targetEl.querySelector('.yt-hwv-block-btn')) || targetEl.parentNode.querySelector('.yt-hwv-block-btn')) return;
+    			if (channelLink) {
+    				const rawChannelName = channelLink.textContent.trim();
+    				const parsedChannelNames = getChannelNamesFromString(rawChannelName);
 
-			// 3. Récupération du nom
-			const rawChannelName = targetEl.textContent.trim();
-			const parsedChannelNames = getChannelNamesFromString(rawChannelName);
-			const primaryChannelName = parsedChannelNames[0];
+    				// Vérifie si AU MOINS UNE des chaînes extraites est dans la liste de blocage
+    				const isBlocked = parsedChannelNames.some(name => BLOCKED_CHANNELS.includes(name));
 
-			if (!primaryChannelName) return;
-
-			// 4. Création du bouton
-			const btn = document.createElement('span');
-			btn.className = 'yt-hwv-block-btn';
-			btn.style.cursor = 'pointer';
-			btn.style.fontSize = '14px'; // Un peu plus grand pour le titre
-			btn.style.marginRight = '8px';
-			btn.style.color = 'var(--yt-spec-text-primary)';
-			btn.style.opacity = '0.5';
-			btn.style.userSelect = 'none';
-			btn.style.position = 'relative';
-			btn.style.zIndex = '1';
-
-			const updateBtnIcon = () => {
-				const current = getBlockedChannels();
-				const isBlocked = current.includes(primaryChannelName);
-				btn.textContent = isBlocked ? '✅' : '🚫';
-				btn.title = isBlocked
-					? `Débloquer la chaîne "${primaryChannelName}"`
-					: `Bloquer la chaîne "${primaryChannelName}"`;
-				btn.style.opacity = isBlocked ? '1' : '0.5';
-			};
-
-			updateBtnIcon();
-
-			btn.addEventListener('mouseenter', () => btn.style.opacity = '1');
-			btn.addEventListener('mouseleave', () => {
-				const isBlocked = getBlockedChannels().includes(primaryChannelName);
-				if (!isBlocked) btn.style.opacity = '0.5';
-			});
-
-			btn.addEventListener('click', (e) => {
-				e.preventDefault();
-				e.stopPropagation();
-
-				const current = getBlockedChannels();
-				if (current.includes(primaryChannelName)) {
-					const index = current.indexOf(primaryChannelName);
-					current.splice(index, 1);
-				} else {
-					current.push(primaryChannelName);
-				}
-
-				gmc.set('BLOCKED_CHANNELS_LIST', current.join('\n'));
-				gmc.save();
-				updateClassOnBlockedChannelItems();
-				updateBtnIcon();
-			});
-
-			// 5. Insertion
-            if (targetEl.tagName === 'H1') {
-                // Cas spécial H1 : on insère au tout début du contenu du H1
-                targetEl.insertBefore(btn, targetEl.firstChild);
-            } else {
-                // Cas standard : avant l'élément
-                targetEl.parentNode.insertBefore(btn, targetEl);
-            }
-		});
-	};
-
-	// ===========================================================
-
-	const removeHiddenElements = () => {
-		const hiddenSelectors = [
-			'.YT-HWV-WATCHED-HIDDEN',
-			'.YT-HWV-HISTORY-HIDDEN',
-			'.YT-HWV-SHORTS-HIDDEN',
-			'.YT-HWV-UPCOMING-HIDDEN',
-			'.YT-HWV-MIXES-HIDDEN',
-			'.YT-HWV-MEMBERS-ONLY-HIDDEN',
-			'.YT-HWV-BLOCKED-CHANNEL-HIDDEN'
-		].join(',');
-
-		const elementsToRemove = document.querySelectorAll(hiddenSelectors);
-
-		logDebug(`Removing ${elementsToRemove.length} hidden elements from the DOM.`);
-
-		elementsToRemove.forEach(el => el.remove());
-	};
-
-	// ===========================================================
-
-	const renderButtons = () => {
-		// Find button area target
-		const target = findButtonAreaTarget();
-		if (!target) return;
-
-		// Did we already render the buttons?
-		const existingButtons = document.querySelector('.YT-HWV-BUTTONS');
-
-		// Generate buttons area DOM
-		const buttonArea = document.createElement('div');
-		buttonArea.classList.add('YT-HWV-BUTTONS');
-
-		// Render buttons
-		BUTTONS.forEach(({ icon, iconHidden, name, stateKey, type, color }) => {
-			// For toggle buttons, determine where in localStorage they track state
-			const section = determineYoutubeSection();
-			const storageKey = [stateKey, section].join('_');
-			const toggleButtonState = localStorage.getItem(storageKey) || 'normal';
-
-			// Generate button DOM
-			const button = document.createElement('button');
-			button.title =
-				type === 'toggle'
-					? `${name} : currently "${toggleButtonState}" for section "${section}"`
-					: `${name}`;
-			button.classList.add('YT-HWV-BUTTON');
-			if (toggleButtonState !== 'normal')
-				button.classList.add('YT-HWV-BUTTON-DISABLED');
-            if (color) button.style.color = color;
-			button.innerHTML = toggleButtonState === 'hidden' ? iconHidden : icon;
-			buttonArea.appendChild(button);
-
-			// Attach events for toggle buttons
-			switch (type) {
-				case 'toggle':
-					button.addEventListener('click', () => {
-						logDebug(`Button ${name} clicked. State: ${toggleButtonState}`);
-
-						let newState = 'dimmed';
-						if (toggleButtonState === 'dimmed') {
-							newState = 'hidden';
-						} else if (toggleButtonState === 'hidden') {
-							newState = 'normal';
-						}
-
-						localStorage.setItem(storageKey, newState);
-
-						updateClassOnWatchedItems();
-						updateClassOnHistoryItems();
-						updateClassOnShortsItems();
-						updateClassOnUpcomingItems();
-						updateClassOnMixesItems();
-						updateClassOnMembersOnlyItems();
-						updateClassOnBlockedChannelItems();
-						renderButtons();
-					});
-					break;
-				case 'action':
-					button.addEventListener('click', () => {
-						logDebug(`Button ${name} clicked.`);
-						removeHiddenElements();
-					});
-					break;
-				case 'settings':
-					button.addEventListener('click', () => {
-						gmc.open();
-						renderButtons();
-					});
-					break;
-			}
-		});
-
-		// Insert buttons into DOM
-		if (existingButtons) {
-			target.parentNode.replaceChild(buttonArea, existingButtons);
-			logDebug('Re-rendered menu buttons');
-		} else {
-			target.parentNode.insertBefore(buttonArea, target);
-			logDebug('Rendered menu buttons');
+    				if (isBlocked) {
+    					if (state === 'dimmed') {
+    						item.classList.add('YT-HWV-BLOCKED-CHANNEL-DIMMED');
+    					} else if (state === 'hidden') {
+    						item.classList.add('YT-HWV-BLOCKED-CHANNEL-HIDDEN');
+    					}
+    				}
+    			}
+    		});
+		} catch (error) {
+			console.error('[YT-HWV]', error);
 		}
 	};
 
-	const run = debounce((mutations) => {
+	const injectBlockChannelButtons = async () => {
+		// CORRECTION 6.16: Ajout de yt-page-header-renderer
+        try {
+    		const elements = document.querySelectorAll(
+    			[
+                    'ytd-rich-item-renderer',
+                    'ytd-video-renderer',
+                    'ytd-grid-video-renderer',
+                    'ytd-compact-video-renderer',
+                    'ytd-reel-item-renderer',
+                    'ytd-c4-tabbed-header-renderer',
+                    'ytd-channel-header-renderer',
+                    'yt-page-header-renderer' // <--- Le conteneur fourni dans votre HTML
+                ].join(',')
+    		);
+
+    		elements.forEach(item => {
+    			let targetEl = null;
+
+                // Cas 1 : Vidéos Standards
+    			const channelNameEl = item.querySelector('ytd-channel-name, yt-content-metadata-view-model');
+                if (channelNameEl) {
+                     targetEl = channelNameEl.querySelector('a, .yt-core-attributed-string__link, yt-formatted-string, #text');
+                }
+
+                // Cas 2 : Nouvel En-tête de chaîne (Votre cas spécifique)
+                // On cherche le H1 dans le View Model
+                if (item.tagName.toLowerCase() === 'yt-page-header-renderer') {
+                    const titleH1 = item.querySelector('yt-dynamic-text-view-model h1');
+                    if (titleH1) {
+                        targetEl = titleH1; // On insérera DANS le h1, au début
+                    }
+                }
+
+    			// Si rien trouvé ou si le bouton existe déjà, on arrête
+                // Note: Pour le H1, on vérifie si le bouton est DANS le H1
+    			if (!targetEl || (targetEl.querySelector && targetEl.querySelector('.yt-hwv-block-btn')) || targetEl.parentNode.querySelector('.yt-hwv-block-btn')) return;
+
+    			// 3. Récupération du nom
+    			const rawChannelName = targetEl.textContent.trim();
+    			const parsedChannelNames = getChannelNamesFromString(rawChannelName);
+    			const primaryChannelName = parsedChannelNames[0];
+
+    			if (!primaryChannelName) return;
+
+    			// 4. Création du bouton
+    			const btn = document.createElement('span');
+    			btn.className = 'yt-hwv-block-btn';
+    			btn.style.cursor = 'pointer';
+    			btn.style.fontSize = '14px'; // Un peu plus grand pour le titre
+    			btn.style.marginRight = '8px';
+    			btn.style.color = 'var(--yt-spec-text-primary)';
+    			btn.style.opacity = '0.5';
+    			btn.style.userSelect = 'none';
+    			btn.style.position = 'relative';
+    			btn.style.zIndex = '1';
+
+    			const updateBtnIcon = () => {
+    				const current = getBlockedChannels();
+    				const isBlocked = current.includes(primaryChannelName);
+    				btn.textContent = isBlocked ? '✅' : '🚫';
+    				btn.title = isBlocked
+    					? `Débloquer la chaîne "${primaryChannelName}"`
+    					: `Bloquer la chaîne "${primaryChannelName}"`;
+    				btn.style.opacity = isBlocked ? '1' : '0.5';
+    			};
+
+    			updateBtnIcon();
+
+    			btn.addEventListener('mouseenter', () => btn.style.opacity = '1');
+    			btn.addEventListener('mouseleave', () => {
+    				const isBlocked = getBlockedChannels().includes(primaryChannelName);
+    				if (!isBlocked) btn.style.opacity = '0.5';
+    			});
+
+    			btn.addEventListener('click', async (e) => {
+    				e.preventDefault();
+    				e.stopPropagation();
+
+    				const current = getBlockedChannels();
+    				if (current.includes(primaryChannelName)) {
+    					const index = current.indexOf(primaryChannelName);
+    					current.splice(index, 1);
+    				} else {
+    					current.push(primaryChannelName);
+    				}
+
+    				gmc.set('BLOCKED_CHANNELS_LIST', current.join('\n'));
+    				gmc.save();
+    				await updateClassOnBlockedChannelItems();
+    				updateBtnIcon();
+    			});
+
+    			// 5. Insertion
+                if (targetEl.tagName === 'H1') {
+                    // Cas spécial H1 : on insère au tout début du contenu du H1
+                    targetEl.insertBefore(btn, targetEl.firstChild);
+                } else {
+                    // Cas standard : avant l'élément
+                    targetEl.parentNode.insertBefore(btn, targetEl);
+                }
+    		});
+		} catch (error) {
+			console.error('[YT-HWV]', error);
+		}
+	};
+
+	// ===========================================================
+
+	const removeHiddenElements = async () => {
+        try {
+    		const hiddenSelectors = [
+    			'.YT-HWV-WATCHED-HIDDEN',
+    			'.YT-HWV-HISTORY-HIDDEN',
+    			'.YT-HWV-SHORTS-HIDDEN',
+    			'.YT-HWV-UPCOMING-HIDDEN',
+    			'.YT-HWV-MIXES-HIDDEN',
+    			'.YT-HWV-MEMBERS-ONLY-HIDDEN',
+    			'.YT-HWV-BLOCKED-CHANNEL-HIDDEN'
+    		].join(',');
+
+    		const elementsToRemove = document.querySelectorAll(hiddenSelectors);
+
+    		logDebug(`Removing ${elementsToRemove.length} hidden elements from the DOM.`);
+
+    		elementsToRemove.forEach(el => el.remove());
+		} catch (error) {
+			console.error('[YT-HWV]', error);
+		}
+	};
+
+	// ===========================================================
+
+	const renderButtons = async () => {
+        try {
+    		// Find button area target
+    		const target = findButtonAreaTarget();
+    		if (!target) return;
+
+    		// Did we already render the buttons?
+    		const existingButtons = document.querySelector('.YT-HWV-BUTTONS');
+
+    		// Generate buttons area DOM
+    		const buttonArea = document.createElement('div');
+    		buttonArea.classList.add('YT-HWV-BUTTONS');
+
+    		// Render buttons
+    		for (const { icon, iconHidden, name, stateKey, type, color } of BUTTONS) {
+    			// For toggle buttons, determine where in GM storage they track state
+    			const section = determineYoutubeSection();
+    			const storageKey = stateKey ? [stateKey, section].join('_') : null;
+    			const toggleButtonState = storageKey
+    				? await stateGet(storageKey, 'normal')
+    				: 'normal';
+
+    			// Generate button DOM
+    			const button = document.createElement('button');
+    			button.title =
+    				type === 'toggle'
+    					? `${name} : currently "${toggleButtonState}" for section "${section}"`
+    					: `${name}`;
+    			button.classList.add('YT-HWV-BUTTON');
+    			if (toggleButtonState !== 'normal')
+    				button.classList.add('YT-HWV-BUTTON-DISABLED');
+    			if (color) button.style.color = color;
+    			button.innerHTML = toggleButtonState === 'hidden' ? iconHidden : icon;
+    			buttonArea.appendChild(button);
+
+    			// Attach events for toggle buttons
+    			switch (type) {
+    				case 'toggle':
+    					button.addEventListener('click', async () => {
+    						logDebug(`Button ${name} clicked. State: ${toggleButtonState}`);
+
+    						let newState = 'dimmed';
+    						if (toggleButtonState === 'dimmed') {
+    							newState = 'hidden';
+    						} else if (toggleButtonState === 'hidden') {
+    							newState = 'normal';
+    						}
+
+    						await stateSet(storageKey, newState);
+
+    						await updateClassOnWatchedItems();
+    						await updateClassOnHistoryItems();
+    						await updateClassOnShortsItems();
+    						await updateClassOnUpcomingItems();
+    						await updateClassOnMixesItems();
+    						await updateClassOnMembersOnlyItems();
+    						await updateClassOnBlockedChannelItems();
+    						await renderButtons();
+    					});
+    					break;
+    				case 'action':
+    					button.addEventListener('click', async () => {
+    						logDebug(`Button ${name} clicked.`);
+    						await removeHiddenElements();
+    					});
+    					break;
+    				case 'settings':
+    					button.addEventListener('click', async () => {
+    						gmc.open();
+    						await renderButtons();
+    					});
+    					break;
+    			}
+    		}
+
+    		// Insert buttons into DOM
+    		if (existingButtons) {
+    			target.parentNode.replaceChild(buttonArea, existingButtons);
+    			logDebug('Re-rendered menu buttons');
+    		} else {
+    			target.parentNode.insertBefore(buttonArea, target);
+    			logDebug('Rendered menu buttons');
+    		}
+		} catch (error) {
+			console.error('[YT-HWV]', error);
+		}
+	};
+
+	const run = debounce(async (mutations) => {
 		// Don't react if only our own buttons changed state
 		// to avoid running an endless loop
 		if (
@@ -1126,15 +1206,15 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		}
 
 		logDebug('Running check for watched videos, and shorts');
-		updateClassOnWatchedItems();
-		updateClassOnHistoryItems();
-		updateClassOnShortsItems();
-		updateClassOnUpcomingItems();
-		updateClassOnMixesItems();
-		updateClassOnMembersOnlyItems();
-		updateClassOnBlockedChannelItems();
-		injectBlockChannelButtons();
-		renderButtons();
+		await updateClassOnWatchedItems();
+		await updateClassOnHistoryItems();
+		await updateClassOnShortsItems();
+		await updateClassOnUpcomingItems();
+		await updateClassOnMixesItems();
+		await updateClassOnMembersOnlyItems();
+		await updateClassOnBlockedChannelItems();
+		await injectBlockChannelButtons();
+		await renderButtons();
 	}, 250);
 
 	// ===========================================================
@@ -1178,7 +1258,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 					if (
 						mutations.length === 1 &&
 						mutations[0].addedNodes?.length === 1 &&
-						mutations[0].addedNodes[0].classList.contains('YT-HWV-BUTTONS')
+						mutations[0].addedNodes[0]?.classList?.contains('YT-HWV-BUTTONS')
 					) {
 						return;
 					}
