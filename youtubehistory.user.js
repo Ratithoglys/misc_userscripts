@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube: Hide Watched Videos extended - Ebumna
 // @namespace    https://ebumna.net/
-// @version      6.18
+// @version      6.19a
 // @license      MIT
 // @description  Hides watched videos (and shorts) from your YouTube subscriptions page. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Ev Haus
@@ -22,11 +22,6 @@
 // @updateURL    https://github.com/Ratithoglys/misc_userscripts/raw/refs/heads/main/youtubehistory.user.js
 // @downloadURL  https://github.com/Ratithoglys/misc_userscripts/raw/refs/heads/main/youtubehistory.user.js
 // ==/UserScript==
-
-// To submit bugs or submit revisions please see visit the repository at:
-// https://github.com/EvHaus/youtube-hide-watched
-// You can open new issues at:
-// https://github.com/EvHaus/youtube-hide-watched/issues
 
 const REGEX_CHANNEL = /.*\/(user|channel|c)\/.+\/videos/u;
 const REGEX_USER = /.*\/@.*/u;
@@ -419,54 +414,62 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 	// ===========================================================
 
 	const findMixesElements = () => {
-		const mixes =[];
-
-		const elements = document.querySelectorAll(
-			'yt-thumbnail-overlay-badge-view-model .yt-badge-shape__icon, yt-thumbnail-overlay-badge-view-model .ytBadgeShapeIcon, .ytBadgeShapeText, .yt-badge-shape__text, a[title^="Mix -"], a[title^="Mix:"]'
+		// 1. Recherche native CSS (titres, icônes SVG musique/playlist, vignettes empilées)
+		const nativeMatches = Array.from(
+			document.querySelectorAll([
+				'a[title^="Mix -"]',
+				'a[title^="Mix:"]',
+				'a[title^="Mix –"]',
+				'svg path[d*="M5.5 1.383"]', // Note de musique dans la miniature (ex: Nirvana)
+				'svg path[d*="V6.888"]',      // Badge d'Artiste Officiel (chaîne)
+				'svg path[d*="M11 2.766"]',   // Icône Mix / Musique classique
+				'svg path[d*="M8 7.697"]',    // Icône Playlist (lignes + bouton play)
+				'yt-collections-stack',       // Vignette empilée de playlist
+			].join(','))
 		);
 
-		elements.forEach(el => {
-			let isMix = false;
-			if (el.tagName.toLowerCase() === 'a') {
-				isMix = true; // Sélectionné via l'attribut title
-			} else if (el.classList.contains('yt-badge-shape__icon') || el.classList.contains('ytBadgeShapeIcon')) {
-				isMix = true; // Sélectionné via la classe d'icône
-			} else {
-				// Sélectionné via le contenu textuel
-				if (el.textContent.trim().toLowerCase() === 'mix') {
-					isMix = true;
-				}
-			}
-
-			if (isMix) {
-				const container = el.closest('ytd-rich-item-renderer, ytd-video-renderer, ytd-compact-video-renderer, ytd-grid-video-renderer');
-				if (container && !mixes.includes(container)) mixes.push(container);
-			}
+		// 2. Filtre rapide des badges texte "mix", "musique", "music" ou "playlist"
+		const textBadges = Array.from(
+			document.querySelectorAll('.ytBadgeShapeText, .yt-badge-shape__text, .ytContentMetadataViewModelMetadataText')
+		).filter((el) => {
+			const text = el.textContent.trim().toLowerCase();
+			return text === 'mix' || text === 'musique' || text === 'music' || text === 'playlist';
 		});
 
-		logDebug(
-			`Found ${mixes.length} mix elements`
-		);
+		// 3. Récupération de la cellule de grille parente (priorité à la cellule parent pour réorganiser la grille)
+		const containers = new Set();
+		[...nativeMatches, ...textBadges].forEach((el) => {
+			const container =
+				el.closest('ytd-rich-item-renderer, ytd-video-renderer, ytd-compact-video-renderer, ytd-grid-video-renderer') ||
+				el.closest('yt-lockup-view-model');
+			if (container) containers.add(container);
+		});
 
-		return mixes;
+		logDebug(`Found ${containers.size} mix/playlist elements`);
+
+		return Array.from(containers);
 	};
 
 	// ===========================================================
 
 	const findMembersOnlyElements = () => {
-		const elements =[];
-		const badges = document.querySelectorAll('ytd-badge-supported-renderer, .ytBadgeShapeText, .yt-badge-shape__text, badge-shape');
+		const MEMBERS_REGEX = /member|membre|premium|sponsor|payant|pay to watch|buy or rent|acheter|louer/i;
 
-		badges.forEach(badge => {
-			const text = badge.textContent.trim().toLowerCase();
-			if (text.includes('member') || text.includes('membre') || text.includes('premium') || text.includes('sponsor') || text.includes('payant') || text.includes('pay to watch') || text.includes('buy or rent') || text.includes('acheter') || text.includes('louer')) {
-				const container = badge.closest('ytd-rich-item-renderer, ytd-video-renderer, ytd-compact-video-renderer, ytd-grid-video-renderer, ytd-compact-movie-renderer, yt-lockup-view-model');
-				if (container && !elements.includes(container)) elements.push(container);
-			}
-		});
+		const containers = new Set();
+		document
+			.querySelectorAll('ytd-badge-supported-renderer, .ytBadgeShapeText, .yt-badge-shape__text, badge-shape')
+			.forEach((badge) => {
+				if (MEMBERS_REGEX.test(badge.textContent)) {
+					const container =
+						badge.closest('ytd-rich-item-renderer, ytd-video-renderer, ytd-compact-video-renderer, ytd-grid-video-renderer, ytd-compact-movie-renderer') ||
+						badge.closest('yt-lockup-view-model');
+					if (container) containers.add(container);
+				}
+			});
 
-		logDebug(`Found ${elements.length} members only/paid elements`);
-		return elements;
+		logDebug(`Found ${containers.size} members only/paid elements`);
+
+		return Array.from(containers);
 	};
 
 	// ===========================================================
@@ -548,7 +551,9 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 							.classList.add('YT-HWV-HIDDEN-ROW-PARENT');
 					}
 				} else if (section === 'playlist') {
-					watchedItem = item.closest('ytd-playlist-video-renderer');
+					watchedItem =
+						item.closest('ytd-playlist-video-renderer') ||
+						item.closest('yt-lockup-view-model');
 				} else if (section === 'watch') {
 					watchedItem =
 						item.closest('ytd-compact-video-renderer') ||
@@ -647,7 +652,9 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
                             .classList.add('YT-HWV-HIDDEN-ROW-PARENT');
                     }
                 } else if (section === 'playlist') {
-                    watchedItem = item.closest('ytd-playlist-video-renderer');
+                    watchedItem =
+						item.closest('ytd-playlist-video-renderer') ||
+						item.closest('yt-lockup-view-model');
                 } else if (section === 'watch') {
                     watchedItem =
                         item.closest('ytd-compact-video-renderer') ||
@@ -776,7 +783,9 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
                             .classList.add('YT-HWV-HIDDEN-ROW-PARENT');
                     }
                 } else if (section === 'playlist') {
-                    upcomingItem = item.closest('ytd-playlist-video-renderer');
+                    upcomingItem =
+						item.closest('ytd-playlist-video-renderer') ||
+						item.closest('yt-lockup-view-model');
                 } else if (section === 'watch') {
                     upcomingItem =
                         item.closest('ytd-compact-video-renderer') ||
