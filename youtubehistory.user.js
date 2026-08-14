@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube: Hide Watched Videos extended - Ebumna
 // @namespace    https://ebumna.net/
-// @version      6.19a
+// @version      6.19b
 // @license      MIT
 // @description  Hides watched videos (and shorts) from your YouTube subscriptions page. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Ev Haus
@@ -136,25 +136,28 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 .ytThumbnailHoverOverlayToggleActionsViewModelHost { top:0; }
 
 .YT-HWV-WATCHED-HIDDEN { display: none !important }
-.YT-HWV-WATCHED-DIMMED { opacity: 0.3 }
+.YT-HWV-WATCHED-DIMMED { opacity: 0.45 }
 
 .YT-HWV-SHORTS-HIDDEN { display: none !important }
-.YT-HWV-SHORTS-DIMMED { opacity: 0.3 }
+.YT-HWV-SHORTS-DIMMED { opacity: 0.45 }
 
 .YT-HWV-HISTORY-HIDDEN { display: none !important }
-.YT-HWV-HISTORY-DIMMED { background-color: rgba(255,255,0,0.2); opacity: 0.3 }
+.YT-HWV-HISTORY-DIMMED { background-color: rgba(255, 235, 59, 0.12); opacity: 0.45 }
 
 .YT-HWV-UPCOMING-HIDDEN { display: none !important }
-.YT-HWV-UPCOMING-DIMMED { background-color: rgba(0,200,255,0.2); opacity: 0.3 }
+.YT-HWV-UPCOMING-DIMMED { background-color: rgba(3, 169, 244, 0.12); opacity: 0.45 }
 
 .YT-HWV-MIXES-HIDDEN { display: none !important }
-.YT-HWV-MIXES-DIMMED { background-color: rgba(255,0,55,0.2); opacity: 0.3 }
+.YT-HWV-MIXES-DIMMED { background-color: rgba(233, 30, 99, 0.12); opacity: 0.45 }
 
 .YT-HWV-MEMBERS-ONLY-HIDDEN { display: none !important }
-.YT-HWV-MEMBERS-ONLY-DIMMED { background-color: rgba(0,181,26,0.2); opacity: 0.3 }
+.YT-HWV-MEMBERS-ONLY-DIMMED { background-color: rgba(76, 175, 80, 0.12); opacity: 0.45 }
 
 .YT-HWV-BLOCKED-CHANNEL-HIDDEN { display: none !important }
-.YT-HWV-BLOCKED-CHANNEL-DIMMED { background-color: rgba(200,0,255,0.2); opacity: 0.3 }
+.YT-HWV-BLOCKED-CHANNEL-DIMMED { background-color: rgba(156, 39, 176, 0.12); opacity: 0.45 }
+
+.YT-HWV-LIVE-HIDDEN { display: none !important }
+.YT-HWV-LIVE-DIMMED { background-color: rgba(255, 110, 0, 0.12); opacity: 0.45 }
 
 .YT-HWV-HIDDEN-ROW-PARENT { padding-bottom: 10px }
 
@@ -245,6 +248,15 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 				'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c-3 0-5 2-5 5v3.5l-1.5 3h13l-1.5-3v-3.5c0-3-2-5-5-5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="19.5" r="1.5" fill="currentColor"/><path fill="white" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
 			name: 'Toggle Upcoming',
 			stateKey: 'YTHWV_STATE_UPCOMING',
+			type: 'toggle',
+		},
+		{ // LIVES / STREAMS
+			color: 'rgb(255, 110, 0)',
+			icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M12 3a9 9 0 00-9 9c0 2.12.74 4.07 1.97 5.61l1.42-1.42A6.98 6.98 0 015 12a7 7 0 1114 0c0 1.61-.55 3.09-1.47 4.27l1.42 1.42A8.96 8.96 0 0021 12a9 9 0 00-9-9zm0 4a5 5 0 00-5 5c0 1.18.41 2.26 1.1 3.12l1.44-1.44A2.98 2.98 0 019 12a3 3 0 116 0c0 .64-.2 1.23-.54 1.72l1.44 1.44c.69-.86 1.1-1.94 1.1-3.12a5 5 0 00-5-5zm0 3a2 2 0 100 4 2 2 0 000-4z"/></svg>',
+			iconHidden:
+				'<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M12 3a9 9 0 00-9 9c0 2.12.74 4.07 1.97 5.61l1.42-1.42A6.98 6.98 0 015 12a7 7 0 1114 0c0 1.61-.55 3.09-1.47 4.27l1.42 1.42A8.96 8.96 0 0021 12a9 9 0 00-9-9zm0 4a5 5 0 00-5 5c0 1.18.41 2.26 1.1 3.12l1.44-1.44A2.98 2.98 0 019 12a3 3 0 116 0c0 .64-.2 1.23-.54 1.72l1.44 1.44c.69-.86 1.1-1.94 1.1-3.12a5 5 0 00-5-5zm0 3a2 2 0 100 4 2 2 0 000-4z"/><path fill="white" d="M4.27 3L3 4.27 19.73 21 21 19.73 4.27 3z"/></svg>',
+			name: 'Toggle Lives / Streams',
+			stateKey: 'YTHWV_STATE_LIVE',
 			type: 'toggle',
 		},
 		{ // MUSIC / MIXES
@@ -409,6 +421,42 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		);
 
 		return upcoming;
+	};
+
+	// ===========================================================
+
+	const findLiveElements = () => {
+		const LIVE_REGEX = /^live$|^en direct$|^direct$|^en vivo$|^diffusé en direct$/i;
+
+		// 1. Recherche native CSS des badges de style LIVE de YouTube
+		const nativeMatches = Array.from(
+			document.querySelectorAll([
+				'[overlay-style="LIVE"]',
+				'.ytBadgeShapeThumbnailLive',
+				'.yt-badge-shape-style-live',
+				'badge-shape[class*="Live"]'
+			].join(','))
+		);
+
+		// 2. Filtre rapide des badges texte
+		const textBadges = Array.from(
+			document.querySelectorAll(
+				'ytd-badge-supported-renderer, .ytBadgeShapeText, .yt-badge-shape__text, .ytContentMetadataViewModelMetadataText, badge-shape'
+			)
+		).filter((badge) => LIVE_REGEX.test(badge.textContent.trim()));
+
+		// 3. Récupération de la cellule de grille parente (priorité au conteneur parent)
+		const containers = new Set();
+		[...nativeMatches, ...textBadges].forEach((el) => {
+			const container =
+				el.closest('ytd-rich-item-renderer, ytd-video-renderer, ytd-compact-video-renderer, ytd-grid-video-renderer') ||
+				el.closest('yt-lockup-view-model');
+			if (container) containers.add(container);
+		});
+
+		logDebug(`Found ${containers.size} live/stream elements`);
+
+		return Array.from(containers);
 	};
 
 	// ===========================================================
@@ -838,6 +886,34 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 	// ===========================================================
 
+	const updateClassOnLiveItems = async () => {
+		try {
+			document
+				.querySelectorAll('.YT-HWV-LIVE-DIMMED')
+				.forEach((el) => el.classList.remove('YT-HWV-LIVE-DIMMED'));
+			document
+				.querySelectorAll('.YT-HWV-LIVE-HIDDEN')
+				.forEach((el) => el.classList.remove('YT-HWV-LIVE-HIDDEN'));
+
+			if (window.location.href.indexOf('/feed/history') >= 0) return;
+
+			const section = determineYoutubeSection();
+			const state = await stateGet(`YTHWV_STATE_LIVE_${section}`);
+
+			findLiveElements().forEach((item) => {
+				if (state === 'dimmed') {
+					item.classList.add('YT-HWV-LIVE-DIMMED');
+				} else if (state === 'hidden') {
+					item.classList.add('YT-HWV-LIVE-HIDDEN');
+				}
+			});
+		} catch (error) {
+			console.error('[YT-HWV]', error);
+		}
+	};
+
+	// ===========================================================
+
 	const updateClassOnMixesItems = async () => {
         try {
             const section = determineYoutubeSection();
@@ -1097,6 +1173,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
     			'.YT-HWV-HISTORY-HIDDEN',
     			'.YT-HWV-SHORTS-HIDDEN',
     			'.YT-HWV-UPCOMING-HIDDEN',
+				'.YT-HWV-LIVE-HIDDEN',
     			'.YT-HWV-MIXES-HIDDEN',
     			'.YT-HWV-MEMBERS-ONLY-HIDDEN',
     			'.YT-HWV-BLOCKED-CHANNEL-HIDDEN'
@@ -1168,6 +1245,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
     						await updateClassOnHistoryItems();
     						await updateClassOnShortsItems();
     						await updateClassOnUpcomingItems();
+    						await updateClassOnLiveItems();
     						await updateClassOnMixesItems();
     						await updateClassOnMembersOnlyItems();
     						await updateClassOnBlockedChannelItems();
@@ -1219,6 +1297,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		await updateClassOnHistoryItems();
 		await updateClassOnShortsItems();
 		await updateClassOnUpcomingItems();
+		await updateClassOnLiveItems();
 		await updateClassOnMixesItems();
 		await updateClassOnMembersOnlyItems();
 		await updateClassOnBlockedChannelItems();
