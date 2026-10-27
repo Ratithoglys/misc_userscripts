@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube – Playlist in Reverse Order - Ebumna
 // @namespace    https://ebumna.net/
-// @version      7.10a
+// @version      7.10.1
 // @license      Unlicense
 // @description  Adds button for loading the previous video in a YT playlist
 // @author       Dragosarus

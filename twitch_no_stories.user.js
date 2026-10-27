@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Twitch – Remove Stories - Ebumna
 // @namespace    https://ebumna.net/
-// @version      0.1a
+// @version      0.1.1
 // @license      CC BY-SA 4.0
 // @description  Remove stories
 // @author       Lénaïc JAOUEN

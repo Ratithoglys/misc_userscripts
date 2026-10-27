@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube – Custom Favicon - Ebumna
 // @namespace    https://ebumna.net/
-// @version      0.2b
+// @version      0.2.1
 // @license      CC BY-SA 4.0
 // @description  Remplace le favicon YouTube par un favicon personnalisé, sauf sur les pages de lecture et YouTube Music.
 // @author       Lénaïc JAOUEN

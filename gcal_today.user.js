@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Google Calendar – Bouton « Aujourd'hui » - Ebumna
 // @namespace    https://ebumna.net/
-// @version      1.1a
+// @version      1.1.1
 // @license      CC BY-SA 4.0
 // @description  Ajoute une icône colorée pour définir la date à aujourd'hui (marges réduites).
 // @author       Lénaïc JAOUEN

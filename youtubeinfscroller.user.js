@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube – Infinite Scroll Manager - Ebumna
 // @namespace    https://ebumna.net/
-// @version      0.4a
+// @version      0.4.1
 // @license      CC BY-SA 4.0
 // @description  Contrôle discret du défilement infini avec emojis et texte adaptés
 // @author       Lénaïc JAOUEN

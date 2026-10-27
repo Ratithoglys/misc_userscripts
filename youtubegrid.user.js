@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube – Grid Customizer - Ebumna
 // @namespace    https://ebumna.net/
-// @version      0.7a
+// @version      0.7.1
 // @license      CC BY-SA 4.0
 // @description  Customize the number of items per row on the YouTube subscriptions page.
 // @author       Lénaïc JAOUEN

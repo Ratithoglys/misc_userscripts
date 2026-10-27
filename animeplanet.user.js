@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Anime-Planet – Colorisation des statuts de liste - Ebumna
 // @namespace    https://ebumna.net/
-// @version      0.2a
+// @version      0.2.1
 // @license      CC BY-SA 4.0
 // @description  Colore les statuts des listes Anime-Planet (non vu/lu, en cours, à voir, abandonné) par la bordure et la couleur du texte.
 // @author       Lénaïc JAOUEN

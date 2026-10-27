@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Cricfree – Page épurée - Ebumna
 // @namespace    https://ebumna.net/
-// @version      0.1a
+// @version      0.1.1
 // @license      CC BY-SA 4.0
 // @description  Ne garde que le contenu central de la page Cricfree, en supprimant les deux autres panneaux autour du lecteur.
 // @author       Lénaïc JAOUEN
