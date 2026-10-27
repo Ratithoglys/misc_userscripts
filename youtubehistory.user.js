@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube – Hide Watched Videos Extended - Ebumna
 // @namespace    https://ebumna.net/
-// @version      6.19.1
+// @version      6.19.3
 // @license      MIT
 // @description  Hides watched videos (and shorts) from your YouTube subscriptions page. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Ev Haus

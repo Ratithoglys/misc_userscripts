@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Instagram & Facebook – Video Controls - Ebumna
 // @namespace    https://ebumna.net/
-// @version      0.2.1
+// @version      0.2.2
 // @license      GNU GPL v3
 // @description  Adds video player controls to Instagram videos and keyboard shortcuts for fullscreen (press 'f') and mute (press 'm')
 // @author       FXZFun
