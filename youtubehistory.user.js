@@ -1,26 +1,26 @@
 // ==UserScript==
 // @name         YouTube: Hide Watched Videos extended - Ebumna
 // @namespace    https://ebumna.net/
-// @version      6.19b
+// @version      6.20b
 // @license      MIT
 // @description  Hides watched videos (and shorts) from your YouTube subscriptions page. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
 // @author       Ev Haus
 // @author       netjeff
 // @author       actionless
 // @author       Lénaïc JAOUEN
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
 // @match        http://*.youtube.com/*
 // @match        http://youtube.com/*
 // @match        https://*.youtube.com/*
 // @match        https://youtube.com/*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
+// @updateURL    https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/youtubehistory.user.js
+// @downloadURL  https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/youtubehistory.user.js
 // @noframes
 // @require      https://openuserjs.org/src/libs/sizzle/GM_config.js
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM.getValue
 // @grant        GM.setValue
-// @updateURL    https://github.com/Ratithoglys/misc_userscripts/raw/refs/heads/main/youtubehistory.user.js
-// @downloadURL  https://github.com/Ratithoglys/misc_userscripts/raw/refs/heads/main/youtubehistory.user.js
 // ==/UserScript==
 
 const REGEX_CHANNEL = /.*\/(user|channel|c)\/.+\/videos/u;

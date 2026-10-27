@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name         GitHub – Colorisation des badges de visibilité
 // @namespace    https://ebumna.net/
-// @version      1.6
+// @version      1.7
+// @license      CC BY-SA 4.0
 // @description  Colorise les badges de visibilité des dépôts GitHub : Public (vert), Private (rouge), Public archive (orange), Private archive (violet).
 // @author       Lénaïc JAOUEN
 // @match        https://github.com/*

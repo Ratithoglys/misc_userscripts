@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name         AI Studio – Mise en valeur des messages utilisateur
-// @namespace    http://ebumna.net/
-// @version      1.0
+// @namespace    https://ebumna.net/
+// @version      1.1
+// @license      CC BY-SA 4.0
 // @description  Ajoute une bordure et un fond subtils aux tours de l'utilisateur pour mieux les distinguer des réponses du modèle.
 // @author       Lénaïc JAOUEN
 // @match        https://aistudio.google.com/*

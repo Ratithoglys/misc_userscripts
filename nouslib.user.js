@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name         Nouslib: Hide Users
 // @namespace    https://ebumna.net/
-// @version      0.5.18
+// @version      0.6.0
+// @license      CC BY-SA 4.0
 // @description  Nouslib: Enhanced hidden users list with working preview and remove buttons. Fixes user card pathname error and selectors. Image preview now follows cursor on hover.
 // @author       Lénaïc JAOUEN
 // @match        https://www.nouslib.com/*
@@ -10,8 +11,8 @@
 // @downloadURL  https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/nouslib.user.js
 // @grant        GM_getValue
 // @grant        GM_setValue
-// @run-at       document-idle
 // @grant        GM_addStyle
+// @run-at       document-idle
 // ==/UserScript==
 
 (function() {

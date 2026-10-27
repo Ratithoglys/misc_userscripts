@@ -1,14 +1,15 @@
 // ==UserScript==
 // @name         Ebumna : Cricfree
-// @namespace    http://ebumna.net/
-// @version      0.1
-// @description  Ebumna : Cricfree
+// @namespace    https://ebumna.net/
+// @version      0.2
+// @license      CC BY-SA 4.0
+// @description  Ne garde que le contenu central de la page Cricfree, en supprimant les deux autres panneaux autour du lecteur.
 // @author       Lénaïc JAOUEN
 // @match        https://cricfree.live/live/*
 // @match        https://cricplay2.xyz/*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=cricfree.live
 // @updateURL    https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/cricfree.user.js
 // @downloadURL  https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/cricfree.user.js
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=cricfree.live
 // @grant        none
 // ==/UserScript==
 

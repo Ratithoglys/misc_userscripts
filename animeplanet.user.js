@@ -1,15 +1,16 @@
 // ==UserScript==
 // @name         Ebumna : anime-planet
-// @namespace    http://ebumna.net/
-// @version      0.2
-// @description  Ebumna : anime-planet
+// @namespace    https://ebumna.net/
+// @version      0.3
+// @license      CC BY-SA 4.0
+// @description  Colore les statuts des listes Anime-Planet (non vu/lu, en cours, à voir, abandonné) par la bordure et la couleur du texte.
 // @author       Lénaïc JAOUEN
 // @match        https://www.anime-planet.com/anime/seasons/*
 // @match        https://www.anime-planet.com/users/*/anime*
 // @match        https://www.anime-planet.com/users/*/manga*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=anime-planet.com
 // @updateURL    https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/animeplanet.user.js
 // @downloadURL  https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/animeplanet.user.js
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=anime-planet.com
 // @grant        none
 // ==/UserScript==
 console.log("tpMonkey: " + location.href)
