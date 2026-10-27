@@ -29,6 +29,7 @@ faciliter le filtrage.
 | `youtubehistory.user.js` | YouTube – Hide Watched Videos Extended - Ebumna | Hides watched videos (and shorts) from your YouTube subscriptions page. |
 | `youtubeicon.user.js` | YouTube – Custom Favicon - Ebumna | Remplace le favicon YouTube par un favicon personnalisé, sauf sur les pages de lecture et YouTube Music. |
 | `youtubeinfscroller.user.js` | YouTube – Infinite Scroll Manager - Ebumna | Contrôle discret du défilement infini avec emojis et texte adaptés. |
+| `youtubeplaylistreverse.user.js` | YouTube – Playlist in Reverse Order - Ebumna | Adds button for loading the previous video in a YT playlist. |
 
 Installation directe (liens raw, branche `main`) :
 
@@ -45,10 +46,12 @@ Installation directe (liens raw, branche `main`) :
 - [youtubehistory.user.js](https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/youtubehistory.user.js)
 - [youtubeicon.user.js](https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/youtubeicon.user.js)
 - [youtubeinfscroller.user.js](https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/youtubeinfscroller.user.js)
+- [youtubeplaylistreverse.user.js](https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/youtubeplaylistreverse.user.js)
 
 ## Licence
 
 Voir le fichier [LICENSE](LICENSE). Les scripts originaux sont sous CC BY-SA 4.0.
 Les scripts dérivés conservent leur licence d'origine, indiquée dans leur
 cartouche : GPLv3 pour `insta_vidctrl.user.js`, MIT pour
-`youtubedefaultaudiotrack.user.js` et `youtubehistory.user.js`.
+`youtubedefaultaudiotrack.user.js` et `youtubehistory.user.js`, Unlicense pour
+`youtubeplaylistreverse.user.js`.
