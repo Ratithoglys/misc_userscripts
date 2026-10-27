@@ -1,10 +1,9 @@
 // ==UserScript==
 // @name         YouTube – Custom Favicon - Ebumna
 // @namespace    https://ebumna.net/
-// @version      0.2a
+// @version      0.2b
 // @license      CC BY-SA 4.0
-// @description  Remplace le favicon YouTube par un favicon personnalisé, sauf sur les pages de lecture et YouTube Music. Basé sur https://github.com/EvHaus/youtube-hide-watched v5.0
-// @author       EvHaus
+// @description  Remplace le favicon YouTube par un favicon personnalisé, sauf sur les pages de lecture et YouTube Music.
 // @author       Lénaïc JAOUEN
 // @match        http://*.youtube.com/*
 // @match        http://youtube.com/*

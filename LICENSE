@@ -22,9 +22,3 @@ prévaut pour ces fichiers :
 - insta_vidctrl.user.js : GNU GPL v3 (auteur d'origine : FXZFun)
 - youtubedefaultaudiotrack.user.js : MIT (auteur d'origine : BuIlDaLiBlE)
 - youtubehistory.user.js : MIT (auteurs d'origine : Ev Haus, netjeff, actionless)
-
-Note sur youtubeicon.user.js : son code est original (injection
-d'un favicon personnalisé). La mention d'EvHaus dans son
-cartouche est une référence historique, pas une reprise de code
-de youtube-hide-watched ; ce fichier est donc bien sous
-CC BY-SA 4.0, comme les autres scripts originaux du dépôt.
