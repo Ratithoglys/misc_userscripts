@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         YouTube Default Audio Track
+// @name         YouTube – Default Audio Track - Ebumna
 // @namespace    https://ebumna.net/
-// @version      2.9a
+// @version      2.8b
 // @license      MIT
 // @description  Makes it possible to select the desired Audio Track played by default and adds a badge to indicate if multiple audio languages are available and if the language has been changed. Basé sur https://greasyfork.org/en/scripts/488877-youtube-default-audio-track
 // @author       BuIlDaLiBlE
