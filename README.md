@@ -19,6 +19,7 @@ faciliter le filtrage.
 | `aistudio.user.js` | AI Studio – Mise en valeur des messages utilisateur - Ebumna | Ajoute une bordure et un fond subtils aux tours de l'utilisateur dans AI Studio. |
 | `animeplanet.user.js` | Anime-Planet – Colorisation des statuts de liste - Ebumna | Colore les statuts des listes Anime-Planet (non vu/lu, en cours, à voir, abandonné) par la bordure et la couleur du texte. |
 | `cricfree.user.js` | Cricfree – Page épurée - Ebumna | Ne garde que le contenu central de la page Cricfree, en supprimant les deux autres panneaux autour du lecteur. |
+| `feuxdeforet.user.js` | FeuxDeForet.fr – Bloqueur de Popups & Pubs - Ebumna | Supprime les popups d'application, bannières publicitaires et overlays sur feuxdeforet.fr |
 | `gcal_today.user.js` | Google Calendar – Bouton « Aujourd'hui » - Ebumna | Ajoute une icône colorée pour définir la date à aujourd'hui (marges réduites). |
 | `github_visibility_badges.user.js` | GitHub – Colorisation des badges de visibilité - Ebumna | Colorise les badges de visibilité des dépôts GitHub : Public (vert), Private (rouge), Public archive (orange), Private archive (violet). |
 | `insta_vidctrl.user.js` | Instagram & Facebook – Video Controls - Ebumna | Adds video player controls to Instagram videos and keyboard shortcuts for fullscreen (press 'f') and mute (press 'm'). |
@@ -36,6 +37,7 @@ Installation directe (liens raw, branche `main`) :
 - [aistudio.user.js](https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/aistudio.user.js)
 - [animeplanet.user.js](https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/animeplanet.user.js)
 - [cricfree.user.js](https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/cricfree.user.js)
+- [feuxdeforet.user.js](https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/feuxdeforet.user.js)
 - [gcal_today.user.js](https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/gcal_today.user.js)
 - [github_visibility_badges.user.js](https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/github_visibility_badges.user.js)
 - [insta_vidctrl.user.js](https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/insta_vidctrl.user.js)
