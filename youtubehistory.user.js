@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube – Hide Watched Videos Extended - Ebumna
 // @namespace    https://ebumna.net/
-// @version      6.20
+// @version      6.20.1
 // @license      MIT
 // @description  Hides watched videos (and shorts) from your YouTube subscriptions page. Basé sur https://github.com/EvHaus/youtube-hide-watched v6.20
 // @author       Ev Haus
@@ -159,6 +159,8 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 .YT-HWV-LIVE-HIDDEN { display: none !important }
 .YT-HWV-LIVE-DIMMED { background-color: rgba(255, 110, 0, 0.12); opacity: 0.45 }
+
+.YT-HWV-WATCHPLAY-HIDDEN { display: none !important }
 
 .YT-HWV-HIDDEN-ROW-PARENT { padding-bottom: 10px }
 
@@ -517,6 +519,60 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 			});
 
 		logDebug(`Found ${containers.size} members only/paid elements`);
+
+		return Array.from(containers);
+	};
+
+	// ===========================================================
+
+	const findWatchPlayElements = () => {
+		// Ajouter ici la version localisée du titre si l'interface n'est pas en anglais
+		const WATCH_PLAY_REGEX = /^watch\s*(?:&|&amp;)\s*play$/i;
+
+		// Conteneurs de section connus ; sinon on remonte jusqu'à l'enfant direct de la liste
+		const SECTION_SELECTOR = [
+			'ytd-item-section-renderer',
+			'ytd-shelf-renderer',
+			'ytd-rich-section-renderer',
+			'ytd-rich-shelf-renderer',
+			'ytd-horizontal-card-list-renderer',
+			'ytd-compact-playlist-renderer',
+		].join(',');
+
+		const findBlock = (el) => {
+			const known = el.closest(SECTION_SELECTOR);
+			if (known) return known;
+			let node = el;
+			while (
+				node.parentElement &&
+				!node.parentElement.matches('#contents, #items, #related, #secondary-inner')
+			) {
+				node = node.parentElement;
+			}
+			return node.parentElement ? node : null;
+		};
+
+		const root = document.querySelector('#related') || document;
+		const containers = new Set();
+
+		// 1. Par texte du titre
+		root
+			.querySelectorAll('h1, h2, h3, yt-formatted-string, span, #title')
+			.forEach((el) => {
+				if (el.children.length > 1) return;
+				if (WATCH_PLAY_REGEX.test(el.textContent.trim())) {
+					const block = findBlock(el);
+					if (block) containers.add(block);
+				}
+			});
+
+		// 2. Par lien vers les Playables
+		root.querySelectorAll('a[href*="/playables"]').forEach((a) => {
+			const block = findBlock(a);
+			if (block) containers.add(block);
+		});
+
+		logDebug(`Found ${containers.size} Watch & Play elements`);
 
 		return Array.from(containers);
 	};
@@ -1001,6 +1057,18 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 
 	// ===========================================================
 
+	const updateClassOnWatchPlayItems = async () => {
+		try {
+			findWatchPlayElements().forEach((item) => {
+				item.classList.add('YT-HWV-WATCHPLAY-HIDDEN');
+			});
+		} catch (error) {
+			console.error('[YT-HWV]', error);
+		}
+	};
+
+	// ===========================================================
+
 	const getBlockedChannels = () => {
 		const list = gmc.get('BLOCKED_CHANNELS_LIST') || '';
 		return list.split('\n').map(c => c.trim()).filter(c => c.length > 0);
@@ -1324,6 +1392,7 @@ if (/music\.youtube\.com\//.test(document.baseURI)) {
 		await updateClassOnLiveItems();
 		await updateClassOnMixesItems();
 		await updateClassOnMembersOnlyItems();
+		await updateClassOnWatchPlayItems();
 		await updateClassOnBlockedChannelItems();
 		await injectBlockChannelButtons();
 		await renderButtons();
