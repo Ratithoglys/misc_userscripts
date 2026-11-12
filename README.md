@@ -24,6 +24,7 @@ faciliter le filtrage.
 | `github_visibility_badges.user.js` | GitHub – Colorisation des badges de visibilité - Ebumna | Colorise les badges de visibilité des dépôts GitHub : Public (vert), Private (rouge), Public archive (orange), Private archive (violet). |
 | `insta_vidctrl.user.js` | Instagram & Facebook – Video Controls - Ebumna | Adds video player controls to Instagram videos and keyboard shortcuts for fullscreen (press 'f') and mute (press 'm'). |
 | `nouslib.user.js` | Nouslib – Hide Users - Ebumna | Enhanced hidden users list with working preview and remove buttons. |
+| `nouslib_export_conversation.user.js` | Nouslib – Export de conversation - Ebumna | Ajoute un bouton d'export (JSON / CSV / Markdown / TXT) sur une conversation de courriers, en distinguant mes messages de ceux de l'interlocuteur. |
 | `tiktok_remove_login_popup.user.js` | TikTok – Supprimer la popup de connexion - Ebumna | Supprime la popup pendant le visionnage et affiche une icône quand elle est bloquée. |
 | `twitch_no_stories.user.js` | Twitch – Remove Stories - Ebumna | Remove stories. |
 | `youtubedefaultaudiotrack.user.js` | YouTube – Default Audio Track - Ebumna | Makes it possible to select the desired Audio Track played by default and adds a badge to indicate if multiple audio languages are available. |
@@ -43,6 +44,7 @@ Installation directe (liens raw, branche `main`) :
 - [github_visibility_badges.user.js](https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/github_visibility_badges.user.js)
 - [insta_vidctrl.user.js](https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/insta_vidctrl.user.js)
 - [nouslib.user.js](https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/nouslib.user.js)
+- [nouslib_export_conversation.user.js](https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/nouslib_export_conversation.user.js)
 - [tiktok_remove_login_popup.user.js](https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/tiktok_remove_login_popup.user.js)
 - [twitch_no_stories.user.js](https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/twitch_no_stories.user.js)
 - [youtubedefaultaudiotrack.user.js](https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/youtubedefaultaudiotrack.user.js)
