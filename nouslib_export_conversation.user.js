@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         Nouslib – Export de conversation - Ebumna
 // @namespace    https://ebumna.net/
-// @version      1.0.0
+// @version      1.0.1
 // @license      CC BY-SA 4.0
 // @description  Ajoute un bouton d'export (JSON / CSV / Markdown / TXT) sur une conversation de courriers, en distinguant mes messages de ceux de l'interlocuteur.
 // @author       Lénaïc JAOUEN
-// @match        https://www.nouslib.com/account/pmessages/*
-// @match        https://nouslib.com/account/pmessages/*
+// @match        https://www.nouslib.com/*
+// @match        https://nouslib.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=nouslib.com
 // @updateURL    https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/nouslib_export_conversation.user.js
 // @downloadURL  https://raw.githubusercontent.com/Ratithoglys/misc_userscripts/main/nouslib_export_conversation.user.js
