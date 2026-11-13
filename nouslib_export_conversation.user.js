@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Nouslib – Export de conversation - Ebumna
 // @namespace    https://ebumna.net/
-// @version      1.0.1
+// @version      1.0.2
 // @license      CC BY-SA 4.0
-// @description  Ajoute un bouton d'export (JSON / CSV / Markdown / TXT) sur une conversation de courriers, en distinguant mes messages de ceux de l'interlocuteur.
+// @description  Ajoute un bouton d'export (JSON / CSV / Markdown / TXT) sur une conversation de courriers, en distinguant mes messages de ceux de l'interlocuteur. Un bouton à côté de chaque message de l'interlocuteur exporte la fin de la conversation à partir de ce message.
 // @author       Lénaïc JAOUEN
 // @match        https://www.nouslib.com/*
 // @match        https://nouslib.com/*
@@ -19,6 +19,8 @@
 
     const BTN_ID = 'nlx-export-btn';
     const MENU_ID = 'nlx-export-menu';
+    const MSG_BTN_CLASS = 'nlx-export-msg-btn';
+    let menuAnchor = null;
 
     /* ---------- Extraction ---------- */
 
@@ -181,6 +183,26 @@
         txt: { label: 'Texte brut', ext: 'txt', mime: 'text/plain', fn: toTXT },
     };
 
+    // Ne garde que les messages à partir de l'index donné (0-based) jusqu'à la fin
+    function sliceFrom(data, startIndex) {
+        if (!startIndex) return data;
+        data.messages = data.messages.slice(startIndex);
+        data.messageCount = data.messages.length;
+        return data;
+    }
+
+    // Position (0-based) du message dans le tableau extrait = nb de message-card avant ce <li>
+    function messageOrdinal(li) {
+        const list = document.querySelector('scroll-box ul');
+        if (!list) return 0;
+        let n = 0;
+        for (const child of list.children) {
+            if (child === li) return n;
+            if (child.querySelector('message-card')) n += 1;
+        }
+        return n;
+    }
+
     /* ---------- Téléchargement ---------- */
 
     function download(filename, content, mime) {
@@ -195,16 +217,17 @@
         setTimeout(() => URL.revokeObjectURL(url), 2000);
     }
 
-    function runExport(key) {
-        const data = extractConversation();
+    function runExport(key, startIndex = 0) {
+        const data = sliceFrom(extractConversation(), startIndex);
         const f = FORMATS[key];
         const safe = (s) => String(s).replace(/[^\w\-]+/g, '_');
         const stamp = new Date().toISOString().slice(0, 10);
-        download(`nouslib_${safe(data.contact.username)}_${stamp}.${f.ext}`, f.fn(data), f.mime);
+        const suffix = startIndex > 0 ? `_partiel-msg${startIndex + 1}` : '';
+        download(`nouslib_${safe(data.contact.username)}_${stamp}${suffix}.${f.ext}`, f.fn(data), f.mime);
     }
 
-    async function copyJSON() {
-        const txt = toJSON(extractConversation());
+    async function copyJSON(startIndex = 0) {
+        const txt = toJSON(sliceFrom(extractConversation(), startIndex));
         try {
             await navigator.clipboard.writeText(txt);
         } catch (e) {
@@ -232,6 +255,8 @@
         color:inherit;padding:8px 10px;border-radius:6px;cursor:pointer;font:inherit}
       #${MENU_ID} button:hover{background:rgba(128,128,128,.2)}
       #${MENU_ID} hr{border:0;border-top:1px solid rgba(128,128,128,.3);margin:4px 0}
+      .${MSG_BTN_CLASS}{cursor:pointer;border:0;background:transparent;font-size:14px;line-height:1;padding:2px 4px;color:inherit;opacity:.65}
+      .${MSG_BTN_CLASS}:hover{opacity:1}
     `;
         document.head.appendChild(st);
     }
@@ -239,16 +264,18 @@
     function closeMenu() {
         const m = document.getElementById(MENU_ID);
         if (m) m.remove();
+        menuAnchor = null;
         document.removeEventListener('click', outsideClick, true);
     }
 
     function outsideClick(e) {
         const m = document.getElementById(MENU_ID);
-        if (m && !m.contains(e.target) && e.target.id !== BTN_ID) closeMenu();
+        if (m && !m.contains(e.target) && e.target.id !== BTN_ID && !e.target.closest('.' + MSG_BTN_CLASS)) closeMenu();
     }
 
-    function openMenu(anchor) {
+    function openMenu(anchor, startIndex = 0) {
         closeMenu();
+        menuAnchor = anchor;
         const menu = document.createElement('div');
         menu.id = MENU_ID;
 
@@ -257,7 +284,7 @@
             b.type = 'button';
             b.textContent = `Exporter en ${f.label}`;
             b.addEventListener('click', () => {
-                runExport(key);
+                runExport(key, startIndex);
                 closeMenu();
             });
             menu.appendChild(b);
@@ -267,7 +294,7 @@
         c.type = 'button';
         c.textContent = 'Copier le JSON';
         c.addEventListener('click', async () => {
-            await copyJSON();
+            await copyJSON(startIndex);
             c.textContent = 'Copié ✓';
             setTimeout(closeMenu, 700);
         });
@@ -295,13 +322,53 @@
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            document.getElementById(MENU_ID) ? closeMenu() : openMenu(btn);
+            if (document.getElementById(MENU_ID) && menuAnchor === btn) closeMenu();
+            else openMenu(btn, 0);
         });
         trailing.insertBefore(btn, trailing.firstChild);
     }
 
-    // Le site utilise Turbo : on réinjecte le bouton après chaque navigation / changement du DOM
-    ensureButton();
-    new MutationObserver(ensureButton).observe(document.documentElement, { childList: true, subtree: true });
-    document.addEventListener('turbo:load', ensureButton);
+    // Un petit bouton ⬇️ à côté de chaque message de l'interlocuteur :
+    // exporte la fin de la conversation à partir de ce message
+    function ensureMessageButtons() {
+        if (!/\/account\/pmessages\//.test(location.pathname)) return;
+        const list = document.querySelector('scroll-box ul');
+        if (!list) return;
+
+        injectStyle();
+        Array.from(list.children).forEach((li) => {
+            if (li.querySelector(':scope > span.tag')) return; // séparateur de date
+            const card = li.querySelector('message-card');
+            if (!card) return;
+            if (li.querySelector('.' + MSG_BTN_CLASS)) return; // déjà fait
+            const isMe =
+                card.getAttribute('owner') === 'current-user' ||
+                !!li.querySelector('message-item.is-outgoing');
+            if (isMe) return;
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = MSG_BTN_CLASS;
+            btn.title = 'Exporter à partir de ce message';
+            btn.textContent = '⬇️';
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (document.getElementById(MENU_ID) && menuAnchor === btn) closeMenu();
+                else openMenu(btn, messageOrdinal(li));
+            });
+            const footer = li.querySelector('message-footer');
+            (footer || li).appendChild(btn);
+        });
+    }
+
+    function ensureAll() {
+        ensureButton();
+        ensureMessageButtons();
+    }
+
+    // Le site utilise Turbo : on réinjecte les boutons après chaque navigation / changement du DOM
+    ensureAll();
+    new MutationObserver(ensureAll).observe(document.documentElement, { childList: true, subtree: true });
+    document.addEventListener('turbo:load', ensureAll);
 })();
