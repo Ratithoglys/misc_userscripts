@@ -24,7 +24,7 @@ faciliter le filtrage.
 | `github_visibility_badges.user.js` | GitHub – Colorisation des badges de visibilité - Ebumna | Colorise les badges de visibilité des dépôts GitHub : Public (vert), Private (rouge), Public archive (orange), Private archive (violet). |
 | `insta_vidctrl.user.js` | Instagram & Facebook – Video Controls - Ebumna | Adds video player controls to Instagram videos and keyboard shortcuts for fullscreen (press 'f') and mute (press 'm'). |
 | `nouslib.user.js` | Nouslib – Hide Users - Ebumna | Enhanced hidden users list with working preview and remove buttons. |
-| `nouslib_export_conversation.user.js` | Nouslib – Export de conversation - Ebumna | Ajoute un bouton d'export (JSON / CSV / Markdown / TXT) sur une conversation de courriers, en distinguant mes messages de ceux de l'interlocuteur. |
+| `nouslib_export_conversation.user.js` | Nouslib – Export de conversation - Ebumna | Ajoute un bouton d'export (JSON / CSV / Markdown / TXT) sur une conversation de courriers, en distinguant mes messages de ceux de l'interlocuteur. Un bouton à côté de chaque message de l'interlocuteur exporte la fin de la conversation à partir de ce message. |
 | `tiktok_remove_login_popup.user.js` | TikTok – Supprimer la popup de connexion - Ebumna | Supprime la popup pendant le visionnage et affiche une icône quand elle est bloquée. |
 | `twitch_no_stories.user.js` | Twitch – Remove Stories - Ebumna | Remove stories. |
 | `youtubedefaultaudiotrack.user.js` | YouTube – Default Audio Track - Ebumna | Makes it possible to select the desired Audio Track played by default and adds a badge to indicate if multiple audio languages are available. |
